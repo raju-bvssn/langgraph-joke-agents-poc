@@ -71,23 +71,16 @@ class TestButtonActions:
     def test_refine_button_calls_revise_joke(self, mock_workflow_class):
         """Refine button should call workflow.revise_joke()."""
         mock_workflow = Mock()
-        mock_workflow.revise_joke.return_value = {
-            "joke": "Revised joke",
-            "feedback": {"laughability_score": 75},
-            "performer_completed": True,
-            "critic_completed": True
-        }
+        # revise_joke returns a string (the revised joke)
+        mock_workflow.revise_joke.return_value = "Revised joke"
+        # evaluate_joke returns a dict (the feedback)
         mock_workflow.evaluate_joke.return_value = {
-            "joke": "Revised joke",
-            "feedback": {
-                "laughability_score": 75,
-                "age_appropriateness": "Teen",
-                "strengths": ["Better punchline"],
-                "weaknesses": ["Still needs work"],
-                "suggestions": ["Add more context"],
-                "overall_verdict": "Improved"
-            },
-            "critic_completed": True
+            "laughability_score": 75,
+            "age_appropriateness": "Teen",
+            "strengths": ["Better punchline"],
+            "weaknesses": ["Still needs work"],
+            "suggestions": ["Add more context"],
+            "overall_verdict": "Improved"
         }
         
         mock_workflow_class.return_value = mock_workflow
@@ -103,37 +96,33 @@ class TestButtonActions:
             "overall_verdict": "Needs improvement"
         }
         
-        result = mock_workflow.revise_joke(original_joke, original_feedback)
+        revised_joke = mock_workflow.revise_joke(original_joke, original_feedback)
         
         mock_workflow.revise_joke.assert_called_once_with(original_joke, original_feedback)
-        assert result["joke"] == "Revised joke"
+        assert revised_joke == "Revised joke"
     
     @patch('app.graph.workflow.JokeWorkflow')
     def test_reevaluate_button_calls_reevaluate_joke(self, mock_workflow_class):
         """Re-evaluate button should call workflow.reevaluate_joke()."""
         mock_workflow = Mock()
+        # reevaluate_joke returns a dict (the feedback)
         mock_workflow.reevaluate_joke.return_value = {
-            "joke": "Same joke",
-            "feedback": {
-                "laughability_score": 70,
-                "age_appropriateness": "Teen",
-                "strengths": ["Different perspective"],
-                "weaknesses": ["Timing"],
-                "suggestions": ["Adjust delivery"],
-                "overall_verdict": "Fresh take"
-            },
-            "critic_completed": True
+            "laughability_score": 70,
+            "age_appropriateness": "Teen",
+            "strengths": ["Different perspective"],
+            "weaknesses": ["Timing"],
+            "suggestions": ["Adjust delivery"],
+            "overall_verdict": "Fresh take"
         }
         
         mock_workflow_class.return_value = mock_workflow
         
         # Simulate reevaluate action
         joke = "Same joke"
-        result = mock_workflow.reevaluate_joke(joke)
+        feedback = mock_workflow.reevaluate_joke(joke)
         
         mock_workflow.reevaluate_joke.assert_called_once_with(joke)
-        assert result["joke"] == joke
-        assert result["feedback"]["laughability_score"] == 70
+        assert feedback["laughability_score"] == 70
     
     def test_complete_button_sets_workflow_complete_flag(self):
         """Complete button should set workflow_complete to True."""

@@ -6,6 +6,7 @@ Tests the revision and re-evaluation workflows.
 import sys
 from pathlib import Path
 from unittest.mock import Mock, MagicMock
+import pytest
 
 # Add app to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -24,11 +25,9 @@ def create_mock_llm(response_content: str):
     return mock_llm
 
 
-def test_initial_workflow():
-    """Test 1: Initial workflow - generate joke + evaluation."""
-    print("Test 1: Initial workflow")
-    print("=" * 50)
-    
+@pytest.fixture
+def workflow_and_history():
+    """Fixture that creates initial workflow and history."""
     # Create mock LLMs
     performer_llm = create_mock_llm("Why did the programmer quit? Because they didn't get arrays!")
     
@@ -48,12 +47,22 @@ def test_initial_workflow():
     # Run initial workflow
     result = workflow.run("programming")
     
-    # Simulate history tracking
+    # Create history
     history = [{
         "joke": result["joke"],
         "feedback": result["feedback"],
         "cycle_type": "initial"
     }]
+    
+    return history, workflow
+
+
+def test_initial_workflow(workflow_and_history):
+    """Test 1: Initial workflow - generate joke + evaluation."""
+    print("Test 1: Initial workflow")
+    print("=" * 50)
+    
+    history, workflow = workflow_and_history
     
     # Assertions
     assert len(history) == 1, "History should have 1 entry"
@@ -62,18 +71,18 @@ def test_initial_workflow():
     assert history[0]["cycle_type"] == "initial", "First cycle should be 'initial'"
     
     print(f"✅ PASS: Initial workflow generated joke and evaluation")
-    print(f"   Joke: {result['joke']}")
-    print(f"   Score: {result['feedback']['laughability_score']}/100")
+    print(f"   Joke: {history[0]['joke']}")
+    print(f"   Score: {history[0]['feedback']['laughability_score']}/100")
     print(f"   History length: {len(history)}")
     print()
-    return history, workflow
 
 
-def test_green_check_refinement(history, workflow):
+def test_green_check_refinement(workflow_and_history):
     """Test 2: Green Check - refine joke based on feedback."""
     print("Test 2: Green Check - Refine joke")
     print("=" * 50)
     
+    history, workflow = workflow_and_history
     latest_cycle = history[-1]
     
     # Mock revised joke response
@@ -117,13 +126,32 @@ def test_green_check_refinement(history, workflow):
     print(f"   Score improved: {history[0]['feedback']['laughability_score']} → {history[1]['feedback']['laughability_score']}")
     print(f"   History length: {len(history)}")
     print()
-    return history
 
 
-def test_red_cross_reevaluation(history, workflow):
+def test_red_cross_reevaluation(workflow_and_history):
     """Test 3: Red Cross - re-evaluate same joke."""
     print("Test 3: Red Cross - Re-evaluate same joke")
     print("=" * 50)
+    
+    history, workflow = workflow_and_history
+    
+    # First do a refinement to have something to re-evaluate
+    latest_cycle = history[-1]
+    revised_joke = workflow.revise_joke(latest_cycle["joke"], latest_cycle["feedback"])
+    workflow.critic_agent.llm.invoke = Mock(return_value=Mock(content="""{
+        "laughability_score": 75,
+        "age_appropriateness": "Teen",
+        "strengths": ["Better wordplay"],
+        "weaknesses": ["Still predictable"],
+        "suggestions": ["Add twist"],
+        "overall_verdict": "Improved"
+    }"""))
+    new_feedback = workflow.evaluate_joke(revised_joke)
+    history.append({
+        "joke": revised_joke,
+        "feedback": new_feedback,
+        "cycle_type": "revised"
+    })
     
     latest_cycle = history[-1]
     
@@ -159,7 +187,6 @@ def test_red_cross_reevaluation(history, workflow):
     print(f"   Score changed: {history[1]['feedback']['laughability_score']} → {history[2]['feedback']['laughability_score']}")
     print(f"   History length: {len(history)}")
     print()
-    return history
 
 
 def test_termination():

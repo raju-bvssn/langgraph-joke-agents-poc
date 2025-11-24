@@ -553,21 +553,19 @@ def handle_refine_action():
                 raise ValueError("Workflow not initialized. Please generate a new joke first.")
             
             # Revise the joke using the performer
-            revised_result = workflow.revise_joke(
+            # revise_joke returns a string directly (the revised joke)
+            revised_joke = workflow.revise_joke(
                 latest_cycle["joke"],
                 latest_cycle["feedback"]
             )
-            
-            # Extract the revised joke
-            revised_joke = revised_result.get("joke", "")
             
             if not revised_joke:
                 raise ValueError("Failed to generate revised joke")
         
         # Evaluate the revised joke
         with st.spinner("🧐 Critic is evaluating the revised joke..."):
-            new_feedback_result = workflow.evaluate_joke(revised_joke)
-            new_feedback = new_feedback_result.get("feedback", {})
+            # evaluate_joke returns a dict directly (the feedback)
+            new_feedback = workflow.evaluate_joke(revised_joke)
             
             if not new_feedback:
                 raise ValueError("Failed to generate evaluation")
@@ -606,8 +604,8 @@ def handle_reevaluate_action():
                 raise ValueError("Workflow not initialized. Please generate a new joke first.")
             
             # Re-evaluate the same joke
-            new_feedback_result = workflow.reevaluate_joke(latest_cycle["joke"])
-            new_feedback = new_feedback_result.get("feedback", {})
+            # reevaluate_joke returns a dict directly (the feedback)
+            new_feedback = workflow.reevaluate_joke(latest_cycle["joke"])
             
             if not new_feedback:
                 raise ValueError("Failed to generate new evaluation")
