@@ -1,7 +1,7 @@
 """
 Streamlit UI for the Multi-Agent Joke System.
 Provides an interactive interface to generate and evaluate jokes with enhanced UX.
-Features: Windsurf-inspired AI theme + Voice playback for jokes.
+Features: Windsurf-inspired AI theme + OpenAI TTS Voice playback for jokes.
 """
 import streamlit as st
 import os
@@ -11,8 +11,7 @@ from typing import Dict, Any, List, Optional
 import difflib
 import base64
 import io
-from gtts import gTTS
-import tempfile
+from openai import OpenAI
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -29,38 +28,43 @@ def get_openai_models_cached():
     return fetch_openai_models()
 
 
-# Voice generation function
-@st.cache_data(show_spinner=False)
-def generate_voice_audio(text: str, voice_speed: float = 1.2) -> bytes:
+# Voice generation function using OpenAI TTS
+@st.cache_data(show_spinner=False, ttl=3600)
+def generate_standup_voice(text: str, voice: str = "alloy", speed: float = 1.07) -> Optional[bytes]:
     """
-    Generate audio from text using Google Text-to-Speech.
+    Generate expressive audio from text using OpenAI's TTS API.
     
     Args:
         text: The joke text to convert to speech
-        voice_speed: Speed multiplier (default 1.2 for energetic comedy delivery)
+        voice: OpenAI voice preset (alloy, echo, fable, onyx, nova, shimmer)
+        speed: Speech speed (0.25 to 4.0, default 1.07 for slightly faster delivery)
     
     Returns:
-        Audio bytes in MP3 format
+        Audio bytes in MP3 format, or None on error
     """
     try:
-        # Create gTTS object with English language
-        tts = gTTS(text=text, lang='en', slow=False)
+        # Get OpenAI API key from secrets or environment
+        api_key = st.secrets.get("OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            st.error("OpenAI API key not found. Please configure it in Streamlit secrets.")
+            return None
         
-        # Save to temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as fp:
-            tts.save(fp.name)
-            fp.seek(0)
-            
-            # Read audio data
-            with open(fp.name, 'rb') as audio_file:
-                audio_bytes = audio_file.read()
-            
-            # Clean up temp file
-            os.unlink(fp.name)
-            
-        return audio_bytes
+        # Initialize OpenAI client
+        client = OpenAI(api_key=api_key)
+        
+        # Generate speech using OpenAI TTS
+        response = client.audio.speech.create(
+            model="tts-1",  # Use tts-1 for faster generation, tts-1-hd for higher quality
+            voice=voice,
+            speed=speed,
+            input=text
+        )
+        
+        # Return audio bytes
+        return response.content
+        
     except Exception as e:
-        st.error(f"Error generating voice: {str(e)}")
+        st.error(f"Error generating voice with OpenAI TTS: {str(e)}")
         return None
 
 
@@ -91,10 +95,70 @@ st.markdown("""
         --text-muted: #A5A5A5;
     }
     
-    /* Override Streamlit defaults */
+    /* Force Override ALL Streamlit Defaults to Dark Theme */
+    html, body, [class*="css"], .stApp, [data-testid="stAppViewContainer"],
+    [data-testid="stHeader"], .main, .block-container, [data-testid="stSidebar"] {
+        background-color: #0E1117 !important;
+        color: #EAEAEA !important;
+    }
+    
+    /* Override Streamlit main app background */
     .stApp {
-        background: linear-gradient(135deg, #0E1117 0%, #1A1F27 100%);
+        background: linear-gradient(135deg, #0E1117 0%, #1A1F27 100%) !important;
         font-family: 'Inter', sans-serif;
+    }
+    
+    /* Sidebar dark theme */
+    [data-testid="stSidebar"] {
+        background: #0E1117 !important;
+        border-right: 1px solid rgba(127, 90, 240, 0.2);
+    }
+    
+    [data-testid="stSidebar"] .sidebar-content {
+        background: #0E1117 !important;
+    }
+    
+    /* Block container (main content area) */
+    .block-container {
+        background-color: #0E1117 !important;
+        padding-top: 2rem !important;
+    }
+    
+    /* Override white backgrounds on all elements */
+    section[data-testid="stSidebar"] > div,
+    .element-container,
+    [data-testid="stVerticalBlock"],
+    [data-testid="stHorizontalBlock"] {
+        background-color: transparent !important;
+    }
+    
+    /* Override input fields */
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stSelectbox > div > div,
+    .stMultiSelect > div > div {
+        background-color: #1A1F27 !important;
+        color: #EAEAEA !important;
+        border: 1px solid rgba(127, 90, 240, 0.3) !important;
+    }
+    
+    /* Override expander backgrounds */
+    .streamlit-expanderHeader {
+        background-color: rgba(26, 31, 39, 0.8) !important;
+        border: 1px solid rgba(127, 90, 240, 0.2) !important;
+        border-radius: 8px;
+    }
+    
+    .streamlit-expanderContent {
+        background-color: rgba(14, 17, 23, 0.95) !important;
+        border: 1px solid rgba(127, 90, 240, 0.1) !important;
+    }
+    
+    /* Override info/success/warning/error boxes */
+    .stAlert {
+        background-color: rgba(26, 31, 39, 0.9) !important;
+        border-left: 4px solid var(--accent) !important;
+        color: #EAEAEA !important;
     }
     
     /* Main content area */
@@ -671,6 +735,45 @@ st.markdown("""
         40% { content: '..'; }
         60%, 100% { content: '...'; }
     }
+    
+    /* Generic card class for wrapping content */
+    .card {
+        background: rgba(255, 255, 255, 0.05) !important;
+        padding: 20px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        margin: 15px 0;
+        box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+    }
+    
+    /* AI header with gradient text */
+    .ai-header {
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(90deg, #4A90E2, #7F5AF0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    /* Button hover neon glow */
+    .stButton > button {
+        background: #1A1F27 !important;
+        border: 1px solid #7F5AF0 !important;
+        color: white !important;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        box-shadow: 0px 0px 12px #7F5AF0 !important;
+        border: 1px solid #A28CFF !important;
+        transform: translateY(-1px);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -990,41 +1093,73 @@ def display_cycle(cycle_data: dict, cycle_num: int, is_latest: bool = False, pre
 
 def display_voice_button(joke_text: str, cycle_num: int):
     """
-    Display voice playback button for a joke with Windsurf-inspired design.
+    Display voice playback button for a joke with OpenAI TTS and voice style selection.
     
     Args:
         joke_text: The joke text to convert to speech
         cycle_num: Cycle number for unique button key
     """
-    col1, col2 = st.columns([1, 4])
+    # Voice style selector and button in columns
+    col1, col2, col3 = st.columns([2, 2, 2])
     
     with col1:
-        # Voice button with loading state
-        if st.button(f"🎤 Listen", key=f"voice_btn_{cycle_num}", use_container_width=True):
-            with st.spinner("🎵 Generating stand-up voice..."):
+        # Voice style selector
+        voice_mapping = {
+            "🎭 Stand-up Comedy": ("alloy", 1.07),  # Fast, energetic
+            "🗣️ Narrator": ("onyx", 0.95),  # Deep, measured
+            "💬 Conversational": ("nova", 1.0),  # Natural
+            "⚡ Energetic": ("shimmer", 1.15),  # Fast, excited
+            "🎙️ Professional": ("echo", 1.0),  # Clear, professional
+            "🌟 Expressive": ("fable", 1.05)  # Warm, expressive
+        }
+        
+        voice_style = st.selectbox(
+            "🎙️ Voice Style",
+            options=list(voice_mapping.keys()),
+            index=0,  # Default to Stand-up Comedy
+            key=f"voice_style_{cycle_num}"
+        )
+        
+        voice_name, voice_speed = voice_mapping[voice_style]
+    
+    with col2:
+        # Voice generation button
+        if st.button(f"🎤 Generate Voice", key=f"voice_btn_{cycle_num}", use_container_width=True):
+            with st.spinner(f"🎵 Generating {voice_style} voice..."):
                 try:
-                    audio_bytes = generate_voice_audio(joke_text)
+                    audio_bytes = generate_standup_voice(joke_text, voice=voice_name, speed=voice_speed)
                     
                     if audio_bytes:
-                        # Display audio player with Windsurf styling
-                        st.markdown("**🔊 Stand-up Voice:**")
-                        st.audio(audio_bytes, format="audio/mp3")
+                        # Store audio in session state for this cycle
+                        if "cycle_audio" not in st.session_state:
+                            st.session_state["cycle_audio"] = {}
+                        st.session_state["cycle_audio"][cycle_num] = audio_bytes
+                        st.success("✅ Voice generated!")
+                        st.rerun()
+                    else:
+                        st.warning("⚠️ Could not generate voice. Check your OpenAI API key.")
                         
-                        # Show animated waveform indicator
-                        st.markdown("""
-                        <div style="text-align: center; margin-top: 10px;">
-                            <div class="waveform">
-                                <div class="waveform-bar" style="height: 12px;"></div>
-                                <div class="waveform-bar" style="height: 18px;"></div>
-                                <div class="waveform-bar" style="height: 15px;"></div>
-                                <div class="waveform-bar" style="height: 20px;"></div>
-                                <div class="waveform-bar" style="height: 14px;"></div>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
                 except Exception as e:
-                    st.error(f"Could not generate voice: {str(e)}")
-                    st.info("💡 Voice generation requires an internet connection. Try refreshing the page.")
+                    st.error(f"Voice generation error: {str(e)}")
+                    st.info("💡 Make sure your OpenAI API key is configured in Streamlit secrets.")
+    
+    # Display audio player if audio has been generated for this cycle
+    if "cycle_audio" in st.session_state and cycle_num in st.session_state["cycle_audio"]:
+        st.markdown("**🔊 Professional Stand-up Voice:**")
+        st.audio(st.session_state["cycle_audio"][cycle_num], format="audio/mp3")
+        
+        # Show animated waveform indicator
+        st.markdown("""
+        <div style="text-align: center; margin-top: 10px;">
+            <div class="waveform">
+                <div class="waveform-bar" style="height: 12px;"></div>
+                <div class="waveform-bar" style="height: 18px;"></div>
+                <div class="waveform-bar" style="height: 15px;"></div>
+                <div class="waveform-bar" style="height: 20px;"></div>
+                <div class="waveform-bar" style="height: 14px;"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 def display_cycle_content(cycle_data: dict, cycle_num: int, is_latest: bool, previous_joke: Optional[str] = None):

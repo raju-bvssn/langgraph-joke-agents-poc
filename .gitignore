@@ -40,7 +40,7 @@ ENV/
 .DS_Store
 
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
 
 # Logs
 *.log

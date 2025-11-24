@@ -25,6 +25,5 @@ rich==13.9.4
 # Testing
 pytest>=7.4.0
 
-# Voice/Audio
-gtts==2.5.1
-pydub==0.25.1
+# Voice/Audio (uses OpenAI TTS via openai package above)
+# No additional dependencies needed

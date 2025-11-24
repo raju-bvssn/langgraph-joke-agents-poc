@@ -80,54 +80,65 @@ The Windsurf UI automatically adapts to mobile devices:
 
 ## 🎤 Voice Playback Feature
 
-**NEW in v3.0**: Hear your jokes delivered in a professional stand-up comedy voice!
+**NEW in v3.0**: Hear your jokes delivered in expressive, professional AI voices powered by OpenAI TTS!
 
 ### How It Works
 
-Each generated joke includes a **🎤 Listen** button that converts text to speech using Google Text-to-Speech (gTTS):
+Each generated joke includes a voice style selector and **🎤 Generate Voice** button:
 
 ```
 📝 Generated Joke
 "Why did the AI cross the road? To optimize the other side!"
 
-[🎤 Listen]  ← Click to hear the joke
+[🎙️ Voice Style ▼]  [🎤 Generate Voice]  ← Select style and generate
 ```
 
 ### Voice Features
 
-1. **One-Click Playback**
-   - Click the "🎤 Listen" button next to any joke
-   - Audio generates automatically with a loading spinner
-   - Play directly in your browser
+1. **6 Professional Voice Styles**
+   - 🎭 **Stand-up Comedy** (fast, energetic) - Perfect for punchlines
+   - 🗣️ **Narrator** (deep, measured) - Professional delivery
+   - 💬 **Conversational** (natural) - Casual and friendly
+   - ⚡ **Energetic** (fast, excited) - High-energy performance
+   - 🎙️ **Professional** (clear) - Polished presentation
+   - 🌟 **Expressive** (warm) - Emotional and engaging
 
-2. **Professional Voice**
-   - English language with natural intonation
-   - Optimized speed for comedy delivery (1.2x)
-   - Clear pronunciation for punchlines
+2. **OpenAI TTS Integration**
+   - Powered by OpenAI's advanced text-to-speech models
+   - Natural human-like intonation and emotion
+   - High-quality MP3 audio output
+   - Optimized speech rates for comedy timing
 
 3. **Visual Feedback**
-   - Animated waveform while generating
+   - Loading spinner: "🎵 Generating [style] voice..."
+   - Success confirmation when audio is ready
+   - Animated waveform indicator during playback
    - Built-in audio controls (play, pause, volume, seek)
-   - Pulsing glow effect during playback
 
-4. **Persistent Audio**
-   - Generated audio is cached per joke
-   - No re-generation needed for repeated plays
-   - Works across all refinement cycles
+4. **Smart Caching & Performance**
+   - Audio cached per joke and voice style combination
+   - `@st.cache_data` prevents duplicate API calls
+   - Instant playback on repeated listens
+   - Session state stores audio across refreshes
+   - Cost-efficient (only generates when style changes)
 
 ### Benefits
 
-- **Hear the Timing**: Comedy is all about timing—hear how the joke sounds
+- **Hear the Timing**: Comedy is all about timing—hear how the joke sounds with different deliveries
 - **Accessibility**: Makes jokes accessible to users with visual impairments
-- **Entertainment**: Adds an extra layer of engagement and fun
-- **Testing Delivery**: Hear if the punchline lands effectively
+- **Entertainment**: Professional AI voices add an extra layer of engagement
+- **Testing Delivery**: Try multiple voice styles to find the best punchline delivery
+- **Voice Variety**: Switch between 6 distinct voice personalities
 
 ### Technical Details
 
-- **Engine**: Google Text-to-Speech (gTTS)
-- **Format**: MP3 audio
-- **Caching**: `@st.cache_data` for performance
-- **Fallback**: Graceful error handling with user-friendly messages
+- **Engine**: OpenAI Text-to-Speech API (tts-1 model)
+- **Voice Models**: alloy, echo, fable, onyx, nova, shimmer
+- **Format**: MP3 audio (high quality)
+- **Speed Range**: 0.95x - 1.15x (optimized per style)
+- **Caching**: `@st.cache_data(ttl=3600)` for 1-hour cache
+- **Fallback**: Graceful error handling with helpful troubleshooting
+- **API Key**: Uses `OPENAI_API_KEY` from Streamlit secrets or environment
 
 ### Usage Example
 
