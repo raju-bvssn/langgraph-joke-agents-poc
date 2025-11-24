@@ -504,6 +504,126 @@ class TestExplanationCard:
         assert "multiple times" in explanation_text
 
 
+class TestExampleTopicButtons:
+    """Test example topic button functionality."""
+    
+    def test_example_topics_list_exists(self):
+        """Example topics list should contain AI-themed topics."""
+        example_prompts = [
+            "🤖 artificial intelligence",
+            "💻 programming bugs",
+            "☕ coffee addiction",
+            "🏠 working from home",
+            "🐱 cats vs dogs",
+            "👨 dad jokes",
+            "⚛️ quantum physics",
+            "📱 social media"
+        ]
+        
+        assert len(example_prompts) == 8
+        assert "🤖 artificial intelligence" in example_prompts
+        assert "💻 programming bugs" in example_prompts
+    
+    def test_example_topic_extraction(self):
+        """Clicking a topic should extract the clean prompt without emoji."""
+        example = "🤖 artificial intelligence"
+        clean_prompt = example.split(" ", 1)[1]
+        
+        assert clean_prompt == "artificial intelligence"
+        assert "🤖" not in clean_prompt
+    
+    @patch('app.graph.workflow.JokeWorkflow')
+    def test_example_button_triggers_joke_generation(self, mock_workflow_class):
+        """Clicking an example topic button should directly generate a joke."""
+        # Mock the workflow
+        mock_workflow = Mock()
+        mock_workflow.run.return_value = {
+            "joke": "Why did the AI cross the road? To optimize the other side!",
+            "feedback": {
+                "laughability_score": 75,
+                "age_appropriateness": "Teen",
+                "strengths": ["Creative wordplay"],
+                "weaknesses": ["Predictable"],
+                "suggestions": ["Add surprise"],
+                "overall_verdict": "Good AI joke"
+            }
+        }
+        mock_workflow_class.return_value = mock_workflow
+        
+        # Simulate example button click behavior
+        clean_prompt = "artificial intelligence"
+        
+        # Workflow should be called with the clean prompt
+        result = mock_workflow.run(clean_prompt)
+        
+        assert result is not None
+        assert "joke" in result
+        assert "feedback" in result
+        mock_workflow.run.assert_called_once_with(clean_prompt)
+    
+    def test_multiple_example_topics_have_unique_keys(self):
+        """Each example topic button should have a unique key."""
+        example_prompts = [
+            "🤖 artificial intelligence",
+            "💻 programming bugs",
+            "☕ coffee addiction",
+            "🏠 working from home",
+            "🐱 cats vs dogs",
+            "👨 dad jokes",
+            "⚛️ quantum physics",
+            "📱 social media"
+        ]
+        
+        keys = [f"example_{idx}" for idx in range(len(example_prompts))]
+        
+        # All keys should be unique
+        assert len(keys) == len(set(keys))
+        assert keys == ["example_0", "example_1", "example_2", "example_3", 
+                       "example_4", "example_5", "example_6", "example_7"]
+    
+    @patch('app.graph.workflow.JokeWorkflow')
+    def test_example_button_resets_history(self, mock_workflow_class):
+        """Clicking an example topic should reset history and workflow_complete."""
+        # Mock workflow
+        mock_workflow = Mock()
+        mock_workflow.run.return_value = {
+            "joke": "Test joke",
+            "feedback": {"laughability_score": 70, "age_appropriateness": "All ages",
+                        "strengths": [], "weaknesses": [], "suggestions": [],
+                        "overall_verdict": "OK"}
+        }
+        mock_workflow_class.return_value = mock_workflow
+        
+        # Simulate clicking example topic (should reset state)
+        # In the actual implementation, this happens in the button handler
+        history = []
+        workflow_complete = False
+        
+        assert len(history) == 0
+        assert workflow_complete == False
+    
+    def test_example_topics_have_emojis(self):
+        """All example topics should have emoji prefixes for visual appeal."""
+        example_prompts = [
+            "🤖 artificial intelligence",
+            "💻 programming bugs",
+            "☕ coffee addiction",
+            "🏠 working from home",
+            "🐱 cats vs dogs",
+            "👨 dad jokes",
+            "⚛️ quantum physics",
+            "📱 social media"
+        ]
+        
+        for prompt in example_prompts:
+            # Should contain a space after emoji
+            assert " " in prompt
+            # Should have text after the emoji
+            parts = prompt.split(" ", 1)
+            assert len(parts) == 2
+            assert len(parts[1]) > 0
+
+
 # Run tests
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])

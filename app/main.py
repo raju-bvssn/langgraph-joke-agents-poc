@@ -1197,8 +1197,49 @@ def main():
                 if st.button(example, key=f"example_{idx}", use_container_width=True):
                     # Remove emoji from the prompt value
                     clean_prompt = example.split(" ", 1)[1]
-                    st.session_state["joke_prompt"] = clean_prompt
-                    st.rerun()
+                    
+                    # Directly generate joke for this topic
+                    st.session_state.history = []
+                    st.session_state.workflow_complete = False
+                    
+                    try:
+                        with st.spinner(f"🤖 Performer Agent is crafting a joke about '{clean_prompt}'..."):
+                            # Initialize workflow with runtime-selected LLMs
+                            performer_llm = get_performer_llm(
+                                provider=llm_config["performer_provider"],
+                                model=llm_config["performer_model"]
+                            )
+                            critic_llm = get_critic_llm(
+                                provider=llm_config["critic_provider"],
+                                model=llm_config["critic_model"]
+                            )
+                            workflow = JokeWorkflow(performer_llm, critic_llm)
+                            
+                            # Store workflow in session state for later use
+                            st.session_state.workflow = workflow
+                            st.session_state.llm_config = llm_config
+                            
+                            # Run the workflow
+                            result = workflow.run(clean_prompt)
+                        
+                        # Evaluate the joke
+                        with st.spinner("🧠 Critic Agent is analyzing the joke..."):
+                            # Add initial result to history
+                            st.session_state.history.append({
+                                "joke": result["joke"],
+                                "feedback": result["feedback"],
+                                "cycle_type": "initial"
+                            })
+                        
+                        # Display success
+                        st.markdown('<div class="success-message">✅ Joke generated and evaluated successfully!</div>', unsafe_allow_html=True)
+                        st.rerun()
+                        
+                    except Exception as e:
+                        st.error(f"❌ Error generating joke: {str(e)}")
+                        st.warning("💡 Try switching to a different provider or model. Some providers may have rate limits or temporary issues.")
+                        with st.expander("🔍 Error Details"):
+                            st.exception(e)
         
         st.markdown('</div>', unsafe_allow_html=True)
 
