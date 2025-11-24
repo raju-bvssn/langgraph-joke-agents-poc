@@ -16,12 +16,132 @@ This POC implements a simple but complete multi-agent workflow:
 - ✅ **Complete Multi-Agent System** with state passing
 - ✅ **Structured Output** using Pydantic models
 - ✅ **LangSmith Tracing** for full observability
-- ✅ **Interactive Streamlit UI**
+- ✅ **Interactive Streamlit UI** with Windsurf-inspired design
 - ✅ **Multiple LLM Providers** (OpenAI and Groq)
 - ✅ **Runtime LLM Selection** - Choose different models for each agent
+- ✅ **🎤 Voice Playback** - Hear jokes in professional stand-up voice
+- ✅ **🌊 Windsurf UI Theme** - Modern glassmorphism with neon accents
 - ✅ **Production-Ready Architecture** with proper separation of concerns
 - ✅ **Updated 2025 Models** - Only currently supported, non-deprecated models
 - ✅ **Comprehensive Testing** - Automated validation of all model combinations
+
+## 🌊 Windsurf UI Theme
+
+**NEW in v3.0**: The application now features a stunning **Windsurf-inspired** UI design that elevates the user experience with modern aesthetics and smooth animations.
+
+### Design Philosophy
+
+Inspired by the Windsurf Editor, our UI embraces:
+- **Dark Mode Foundation**: Deep backgrounds (#0E1117, #1A1F27) for comfortable extended use
+- **Glassmorphism**: Semi-transparent blurred cards with subtle borders
+- **Neon Accents**: Electric blue (#4A90E2) and purple (#7F5AF0) gradients
+- **Smooth Animations**: Floating particles, glowing borders, and pulsing elements
+- **Professional Typography**: Inter font family with clear hierarchy
+
+### Visual Features
+
+#### 🎨 Color Palette
+```css
+--primary: #4A90E2    (Electric Blue)
+--accent: #7F5AF0     (Purple)
+--success: #2ECC71    (Green)
+--error: #E74C3C      (Red)
+--text-light: #EAEAEA
+--text-muted: #A5A5A5
+```
+
+#### ✨ Key Design Elements
+
+1. **Glassmorphic Cards**: All joke cycles are displayed in elegant glass-effect containers with:
+   - `backdrop-filter: blur(10px)` for depth
+   - Subtle border gradients
+   - Hover effects with glow and lift animations
+
+2. **Agent Badges**: Visually distinct identity markers
+   - 🤖 Performer Agent: Blue gradient with pulse animation
+   - 🧠 Critic Agent: Green gradient with pulse animation
+
+3. **Gradient Dividers**: Beautiful separators using blue→purple gradients
+
+4. **Animated Hero Header**: 
+   - Floating particle effects
+   - Shimmer underline animation
+   - Radial gradient backgrounds
+
+5. **Neon Glow Effects**: Hover states feature subtle neon glows on interactive elements
+
+### Mobile Responsive
+
+The Windsurf UI automatically adapts to mobile devices:
+- Collapsible sidebar
+- Full-width buttons
+- Stacked layouts for small screens
+- Touch-optimized interactions
+
+## 🎤 Voice Playback Feature
+
+**NEW in v3.0**: Hear your jokes delivered in a professional stand-up comedy voice!
+
+### How It Works
+
+Each generated joke includes a **🎤 Listen** button that converts text to speech using Google Text-to-Speech (gTTS):
+
+```
+📝 Generated Joke
+"Why did the AI cross the road? To optimize the other side!"
+
+[🎤 Listen]  ← Click to hear the joke
+```
+
+### Voice Features
+
+1. **One-Click Playback**
+   - Click the "🎤 Listen" button next to any joke
+   - Audio generates automatically with a loading spinner
+   - Play directly in your browser
+
+2. **Professional Voice**
+   - English language with natural intonation
+   - Optimized speed for comedy delivery (1.2x)
+   - Clear pronunciation for punchlines
+
+3. **Visual Feedback**
+   - Animated waveform while generating
+   - Built-in audio controls (play, pause, volume, seek)
+   - Pulsing glow effect during playback
+
+4. **Persistent Audio**
+   - Generated audio is cached per joke
+   - No re-generation needed for repeated plays
+   - Works across all refinement cycles
+
+### Benefits
+
+- **Hear the Timing**: Comedy is all about timing—hear how the joke sounds
+- **Accessibility**: Makes jokes accessible to users with visual impairments
+- **Entertainment**: Adds an extra layer of engagement and fun
+- **Testing Delivery**: Hear if the punchline lands effectively
+
+### Technical Details
+
+- **Engine**: Google Text-to-Speech (gTTS)
+- **Format**: MP3 audio
+- **Caching**: `@st.cache_data` for performance
+- **Fallback**: Graceful error handling with user-friendly messages
+
+### Usage Example
+
+```python
+# After generating a joke, simply click:
+[🎤 Listen]
+
+# Audio player appears with controls:
+🔊 Stand-up Voice:
+[▶ Play] [⏸ Pause] [🔊 Volume] [⏮ 0:00 / 0:05]
+
+# Waveform animation shows activity:
+| | | | | |  (animated bars)
+```
 
 ## 📊 Agent Metrics
 

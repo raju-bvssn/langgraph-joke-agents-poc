@@ -1,6 +1,7 @@
 """
 Streamlit UI for the Multi-Agent Joke System.
 Provides an interactive interface to generate and evaluate jokes with enhanced UX.
+Features: Windsurf-inspired AI theme + Voice playback for jokes.
 """
 import streamlit as st
 import os
@@ -8,6 +9,10 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import difflib
+import base64
+import io
+from gtts import gTTS
+import tempfile
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -24,9 +29,44 @@ def get_openai_models_cached():
     return fetch_openai_models()
 
 
+# Voice generation function
+@st.cache_data(show_spinner=False)
+def generate_voice_audio(text: str, voice_speed: float = 1.2) -> bytes:
+    """
+    Generate audio from text using Google Text-to-Speech.
+    
+    Args:
+        text: The joke text to convert to speech
+        voice_speed: Speed multiplier (default 1.2 for energetic comedy delivery)
+    
+    Returns:
+        Audio bytes in MP3 format
+    """
+    try:
+        # Create gTTS object with English language
+        tts = gTTS(text=text, lang='en', slow=False)
+        
+        # Save to temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as fp:
+            tts.save(fp.name)
+            fp.seek(0)
+            
+            # Read audio data
+            with open(fp.name, 'rb') as audio_file:
+                audio_bytes = audio_file.read()
+            
+            # Clean up temp file
+            os.unlink(fp.name)
+            
+        return audio_bytes
+    except Exception as e:
+        st.error(f"Error generating voice: {str(e)}")
+        return None
+
+
 # Page configuration
 st.set_page_config(
-    page_title="🎭 Joke Agent POC",
+    page_title="🎭 AI Joke Agents | Windsurf Edition",
     page_icon="🎭",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -419,6 +459,218 @@ st.markdown("""
         color: var(--text-light);
         line-height: 1.7;
     }
+    
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       WINDSURF-INSPIRED ENHANCEMENTS
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    
+    /* Voice Playback Button */
+    .voice-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, rgba(127, 90, 240, 0.2) 0%, rgba(74, 144, 226, 0.2) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(127, 90, 240, 0.4);
+        color: var(--text-light);
+        padding: 10px 18px;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 10px 0;
+        box-shadow: 0 4px 15px rgba(127, 90, 240, 0.3);
+    }
+    
+    .voice-button:hover {
+        background: linear-gradient(135deg, rgba(127, 90, 240, 0.4) 0%, rgba(74, 144, 226, 0.4) 100%);
+        border-color: rgba(127, 90, 240, 0.6);
+        box-shadow: 0 6px 25px rgba(127, 90, 240, 0.5);
+        transform: translateY(-2px);
+    }
+    
+    .voice-button-playing {
+        animation: voicePulse 1.5s infinite;
+        border-color: #2ECC71;
+        box-shadow: 0 0 30px rgba(46, 204, 113, 0.6);
+    }
+    
+    @keyframes voicePulse {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+        }
+        50% {
+            box-shadow: 0 0 40px rgba(46, 204, 113, 0.8);
+        }
+    }
+    
+    /* Animated Waveform for Voice Playing */
+    .waveform {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        height: 20px;
+    }
+    
+    .waveform-bar {
+        width: 3px;
+        background: linear-gradient(180deg, #4A90E2 0%, #7F5AF0 100%);
+        border-radius: 3px;
+        animation: waveAnim 1.2s ease-in-out infinite;
+    }
+    
+    .waveform-bar:nth-child(1) { animation-delay: 0s; }
+    .waveform-bar:nth-child(2) { animation-delay: 0.1s; }
+    .waveform-bar:nth-child(3) { animation-delay: 0.2s; }
+    .waveform-bar:nth-child(4) { animation-delay: 0.3s; }
+    .waveform-bar:nth-child(5) { animation-delay: 0.4s; }
+    
+    @keyframes waveAnim {
+        0%, 100% { height: 8px; }
+        50% { height: 20px; }
+    }
+    
+    /* Neon Accent Effects */
+    .neon-accent {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .neon-accent::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(127, 90, 240, 0.4), transparent);
+        animation: neonSweep 3s infinite;
+    }
+    
+    @keyframes neonSweep {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+    
+    /* Windsurf-style Floating Particles */
+    .hero-header::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-image: 
+            radial-gradient(2px 2px at 20% 30%, rgba(74, 144, 226, 0.3), transparent),
+            radial-gradient(2px 2px at 60% 70%, rgba(127, 90, 240, 0.3), transparent),
+            radial-gradient(1px 1px at 50% 50%, rgba(74, 144, 226, 0.2), transparent),
+            radial-gradient(1px 1px at 80% 10%, rgba(127, 90, 240, 0.2), transparent);
+        background-size: 200% 200%;
+        animation: floatParticles 20s ease-in-out infinite;
+        pointer-events: none;
+    }
+    
+    @keyframes floatParticles {
+        0%, 100% {
+            background-position: 0% 0%, 100% 100%, 50% 50%, 80% 10%;
+        }
+        50% {
+            background-position: 100% 100%, 0% 0%, 30% 70%, 20% 90%;
+        }
+    }
+    
+    /* Enhanced Agent Badge with Pulse Animation */
+    .agent-badge-active {
+        animation: badgePulse 2s infinite;
+    }
+    
+    @keyframes badgePulse {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(127, 90, 240, 0.3);
+            transform: scale(1);
+        }
+        50% {
+            box-shadow: 0 8px 25px rgba(127, 90, 240, 0.6);
+            transform: scale(1.05);
+        }
+    }
+    
+    /* Windsurf-style Glow Border */
+    .glow-border {
+        position: relative;
+        border: 2px solid transparent;
+        background: linear-gradient(135deg, #0E1117, #1A1F27) padding-box,
+                    linear-gradient(135deg, #4A90E2, #7F5AF0) border-box;
+        border-radius: 14px;
+    }
+    
+    /* Improved Audio Player Styling */
+    audio {
+        width: 100%;
+        height: 40px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(127, 90, 240, 0.3);
+        margin: 10px 0;
+    }
+    
+    audio::-webkit-media-controls-panel {
+        background: linear-gradient(135deg, rgba(127, 90, 240, 0.2), rgba(74, 144, 226, 0.2));
+        border-radius: 20px;
+    }
+    
+    /* Streamlit Audio Override */
+    .stAudio {
+        margin: 10px 0;
+    }
+    
+    .stAudio > div {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(127, 90, 240, 0.3);
+        border-radius: 12px;
+        padding: 10px;
+    }
+    
+    /* Enhanced Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .voice-button {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .hero-title {
+            font-size: 24px;
+        }
+        
+        .sidebar-section-header {
+            font-size: 12px;
+        }
+        
+        .agent-badge {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    }
+    
+    /* Loading Voice Animation */
+    .loading-voice {
+        display: inline-block;
+        position: relative;
+    }
+    
+    .loading-voice::after {
+        content: '...';
+        animation: dots 1.5s steps(4, end) infinite;
+    }
+    
+    @keyframes dots {
+        0%, 20% { content: '.'; }
+        40% { content: '..'; }
+        60%, 100% { content: '...'; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -525,7 +777,8 @@ def display_sidebar():
         
         st.markdown('<div class="sidebar-section-header">ℹ️ SYSTEM INFO</div>', unsafe_allow_html=True)
         st.markdown("""
-        **Multi-Agent Joke System v2.0**
+        **Multi-Agent Joke System v3.0**  
+        *Windsurf Edition*
         
         **Features:**
         - 🤖 Dual AI Agents
@@ -533,6 +786,8 @@ def display_sidebar():
         - 📈 Real-time Observability
         - 🎨 5 LLM Providers
         - ✨ Iterative Refinement
+        - 🎤 Voice Playback
+        - 🌊 Windsurf UI Theme
         """)
         
         st.divider()
@@ -573,25 +828,28 @@ Current Selection:
 
 
 def display_header():
-    """Display AI-themed hero header with futuristic design."""
+    """Display Windsurf-inspired hero header with futuristic design and voice features."""
     st.markdown("""
-    <div class="hero-header">
-        <div class="hero-title">🤖 AI Joke Agents Debate</div>
+    <div class="hero-header neon-accent">
+        <div class="hero-title">🌊 AI Joke Agents Debate</div>
         <div class="hero-subtitle">
-            Two AI agents collaborate to craft and refine humor through iterative evaluation. 
+            <strong>Windsurf Edition</strong> — Two AI agents collaborate to craft and refine humor through iterative evaluation. 
             Watch as the Performer creates and the Critic analyzes, forming a continuous improvement loop.
+            Now with 🎤 voice playback for stand-up comedy delivery!
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Info card explaining the system
+    # Info card explaining the system with Windsurf theme
     st.markdown("""
-    <div class="info-card">
-        <strong>💡 How This Works:</strong><br><br>
+    <div class="info-card glow-border">
+        <strong>💡 Windsurf-Powered Features:</strong><br><br>
         <strong>🎭 Performer Agent</strong> → Generates creative, original jokes with high temperature (0.9)<br>
         <strong>🧠 Critic Agent</strong> → Provides structured feedback with analytical precision (temp: 0.3)<br>
         <strong>🔄 Iterative Refinement</strong> → Refine jokes through multiple cycles until perfect<br>
-        <strong>🌐 Multi-LLM Support</strong> → Choose from 5 providers: OpenAI, Groq, HuggingFace, Together AI, DeepInfra
+        <strong>🎤 Voice Playback</strong> → Hear jokes in professional stand-up voice (powered by gTTS)<br>
+        <strong>🌐 Multi-LLM Support</strong> → Choose from 5 providers: OpenAI, Groq, HuggingFace, Together AI, DeepInfra<br>
+        <strong>🌊 Windsurf UI</strong> → Dark theme with glassmorphism, neon accents & smooth animations
     </div>
     """, unsafe_allow_html=True)
     
@@ -730,17 +988,59 @@ def display_cycle(cycle_data: dict, cycle_num: int, is_latest: bool = False, pre
         display_cycle_content(cycle_data, cycle_num, is_latest, previous_joke)
 
 
+def display_voice_button(joke_text: str, cycle_num: int):
+    """
+    Display voice playback button for a joke with Windsurf-inspired design.
+    
+    Args:
+        joke_text: The joke text to convert to speech
+        cycle_num: Cycle number for unique button key
+    """
+    col1, col2 = st.columns([1, 4])
+    
+    with col1:
+        # Voice button with loading state
+        if st.button(f"🎤 Listen", key=f"voice_btn_{cycle_num}", use_container_width=True):
+            with st.spinner("🎵 Generating stand-up voice..."):
+                try:
+                    audio_bytes = generate_voice_audio(joke_text)
+                    
+                    if audio_bytes:
+                        # Display audio player with Windsurf styling
+                        st.markdown("**🔊 Stand-up Voice:**")
+                        st.audio(audio_bytes, format="audio/mp3")
+                        
+                        # Show animated waveform indicator
+                        st.markdown("""
+                        <div style="text-align: center; margin-top: 10px;">
+                            <div class="waveform">
+                                <div class="waveform-bar" style="height: 12px;"></div>
+                                <div class="waveform-bar" style="height: 18px;"></div>
+                                <div class="waveform-bar" style="height: 15px;"></div>
+                                <div class="waveform-bar" style="height: 20px;"></div>
+                                <div class="waveform-bar" style="height: 14px;"></div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"Could not generate voice: {str(e)}")
+                    st.info("💡 Voice generation requires an internet connection. Try refreshing the page.")
+
+
 def display_cycle_content(cycle_data: dict, cycle_num: int, is_latest: bool, previous_joke: Optional[str] = None):
-    """Display the content of a cycle (joke + evaluation) with AI-themed styling."""
+    """Display the content of a cycle (joke + evaluation) with AI-themed styling and voice playback."""
     cycle_type = cycle_data.get("cycle_type", "initial")
     
     # Wrap in glass card
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown('<div class="glass-card neon-accent">', unsafe_allow_html=True)
     
     # Display joke with agent badge
-    st.markdown('<div class="agent-badge agent-badge-performer">🤖 Performer Agent</div>', unsafe_allow_html=True)
+    st.markdown('<div class="agent-badge agent-badge-performer agent-badge-active">🤖 Performer Agent</div>', unsafe_allow_html=True)
     st.markdown("### 😂 Generated Joke")
     st.markdown(f'<div class="joke-container">{cycle_data["joke"]}</div>', unsafe_allow_html=True)
+    
+    # Add voice playback button
+    display_voice_button(cycle_data["joke"], cycle_num)
     
     # Show diff viewer for revised jokes (cycle 2+)
     if cycle_num > 1 and cycle_type == "revised" and previous_joke and previous_joke != cycle_data["joke"]:
