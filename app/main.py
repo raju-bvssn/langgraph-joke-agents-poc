@@ -33,74 +33,406 @@ st.set_page_config(
 )
 
 
-# Custom CSS for better styling
+# Modern AI-Themed Custom CSS with Glassmorphism & Animations
 st.markdown("""
 <style>
-    /* Joke container styling */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    /* Global Theming */
+    :root {
+        --primary: #4A90E2;
+        --secondary: #0E1117;
+        --accent: #7F5AF0;
+        --background: #1A1F27;
+        --surface: #2A2F36;
+        --success: #2ECC71;
+        --error: #E74C3C;
+        --text-light: #EAEAEA;
+        --text-muted: #A5A5A5;
+    }
+    
+    /* Override Streamlit defaults */
+    .stApp {
+        background: linear-gradient(135deg, #0E1117 0%, #1A1F27 100%);
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Main content area */
+    .main .block-container {
+        padding-top: 2rem;
+        max-width: 1400px;
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0E1117 0%, #1A1F27 100%);
+        border-right: 1px solid rgba(127, 90, 240, 0.2);
+    }
+    
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {
+        color: var(--text-light);
+        font-weight: 600;
+    }
+    
+    /* Sidebar section headers */
+    .sidebar-section-header {
+        color: var(--primary);
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-top: 20px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid rgba(74, 144, 226, 0.3);
+    }
+    
+    /* Sidebar navigation items */
+    .sidebar-nav-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin: 5px 0;
+        border-left: 3px solid var(--accent);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .sidebar-nav-item:hover {
+        background: rgba(127, 90, 240, 0.15);
+        border-left-color: var(--primary);
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(127, 90, 240, 0.2);
+    }
+    
+    /* Hero Header */
+    .hero-header {
+        background: radial-gradient(circle at 20% 50%, rgba(127, 90, 240, 0.15), transparent 50%),
+                    radial-gradient(circle at 80% 50%, rgba(74, 144, 226, 0.15), transparent 50%),
+                    linear-gradient(135deg, #0E1117 0%, #1A1F27 100%);
+        padding: 40px 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(127, 90, 240, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+    }
+    
+    .hero-title {
+        font-size: 36px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #4A90E2 0%, #7F5AF0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+        letter-spacing: -0.5px;
+    }
+    
+    .hero-subtitle {
+        color: var(--text-muted);
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 800px;
+    }
+    
+    /* Glassmorphism Cards */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        padding: 24px;
+        margin: 20px 0;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        transition: all 0.3s ease;
+    }
+    
+    .glass-card:hover {
+        border-color: rgba(127, 90, 240, 0.4);
+        box-shadow: 0 12px 48px 0 rgba(127, 90, 240, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    /* Joke container with AI theme */
     .joke-container {
-        background-color: #e3f2fd;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #2196f3;
-        margin: 10px 0;
-    }
-    
-    /* Evaluation container styling */
-    .eval-container {
-        background-color: #f5f5f5;
-        padding: 20px;
-        border-radius: 10px;
-        margin: 10px 0;
-    }
-    
-    /* Cycle header styling */
-    .cycle-header {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 15px;
-        border-radius: 10px;
-        margin: 20px 0 10px 0;
-        font-weight: bold;
-    }
-    
-    /* Button group styling */
-    .button-group {
-        background-color: #fff3e0;
-        padding: 15px;
-        border-radius: 10px;
+        background: linear-gradient(135deg, rgba(74, 144, 226, 0.15) 0%, rgba(127, 90, 240, 0.1) 100%);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+        border-radius: 14px;
+        border: 1px solid rgba(74, 144, 226, 0.3);
         margin: 15px 0;
-        border: 2px dashed #ff9800;
+        font-size: 18px;
+        line-height: 1.8;
+        color: var(--text-light);
+        position: relative;
+        overflow: hidden;
     }
     
-    /* Diff viewer styling */
+    .joke-container::before {
+        content: '😂';
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 32px;
+        opacity: 0.2;
+    }
+    
+    /* Evaluation container with AI theme */
+    .eval-container {
+        background: linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, rgba(74, 144, 226, 0.1) 100%);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+        border-radius: 14px;
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        margin: 15px 0;
+        position: relative;
+    }
+    
+    .eval-container::before {
+        content: '🧠';
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 32px;
+        opacity: 0.2;
+    }
+    
+    /* Agent Badge */
+    .agent-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(127, 90, 240, 0.3);
+    }
+    
+    .agent-badge-performer {
+        background: linear-gradient(135deg, #4A90E2 0%, #5BC0DE 100%);
+    }
+    
+    .agent-badge-critic {
+        background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+    }
+    
+    /* Cycle header with gradient */
+    .cycle-header {
+        background: linear-gradient(135deg, rgba(74, 144, 226, 0.2) 0%, rgba(127, 90, 240, 0.2) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(127, 90, 240, 0.4);
+        color: var(--text-light);
+        padding: 20px 24px;
+        border-radius: 14px;
+        margin: 25px 0 15px 0;
+        font-weight: 700;
+        font-size: 22px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cycle-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: slide 3s infinite;
+    }
+    
+    @keyframes slide {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+    
+    /* AI-themed button group */
+    .button-group {
+        background: linear-gradient(135deg, rgba(127, 90, 240, 0.15) 0%, rgba(74, 144, 226, 0.15) 100%);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 14px;
+        margin: 20px 0;
+        border: 1px solid rgba(127, 90, 240, 0.3);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Custom button styling */
+    .stButton > button {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 12px 24px;
+        border: none;
+        transition: all 0.3s ease;
+        font-size: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(127, 90, 240, 0.4);
+    }
+    
+    /* Diff viewer with AI theme */
     .diff-container {
-        background-color: #fff8e1;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
+        background: linear-gradient(135deg, rgba(127, 90, 240, 0.1) 0%, rgba(231, 76, 60, 0.1) 100%);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 14px;
+        margin: 20px 0;
+        border: 1px solid rgba(127, 90, 240, 0.3);
     }
     
-    /* Models info styling */
+    .diff-header {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-light);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    /* Models metadata */
     .models-info {
-        background-color: #e8f5e9;
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 0.9em;
-        margin: 10px 0;
+        background: linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, rgba(74, 144, 226, 0.15) 100%);
+        backdrop-filter: blur(10px);
+        padding: 16px;
+        border-radius: 12px;
+        font-size: 14px;
+        margin: 15px 0;
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        color: var(--text-light);
+    }
+    
+    .models-info code {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 3px 8px;
+        border-radius: 6px;
+        color: var(--primary);
+        font-weight: 600;
+    }
+    
+    /* Score badges */
+    .score-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        background: linear-gradient(135deg, var(--success) 0%, var(--primary) 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    }
+    
+    /* Loading animations */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    @keyframes glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(127, 90, 240, 0.5); }
+        50% { box-shadow: 0 0 40px rgba(127, 90, 240, 0.8); }
+    }
+    
+    .loading-performer {
+        border: 2px solid var(--primary);
+        animation: glow 2s infinite, pulse 2s infinite;
+    }
+    
+    .loading-critic {
+        border: 2px solid var(--success);
+        animation: glow 2s infinite, pulse 2s infinite;
+    }
+    
+    /* Evaluation metrics styling */
+    .eval-metric {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin: 8px 0;
+        border-left: 3px solid var(--accent);
+        color: var(--text-light);
+    }
+    
+    .eval-metric strong {
+        color: var(--primary);
+        font-weight: 600;
+    }
+    
+    /* Gradient divider */
+    .gradient-divider {
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        margin: 30px 0;
+        border-radius: 2px;
+        opacity: 0.6;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .hero-title { font-size: 28px; }
+        .glass-card { padding: 16px; }
+        .joke-container, .eval-container { padding: 16px; }
+    }
+    
+    /* Success message styling */
+    .success-message {
+        background: linear-gradient(135deg, rgba(46, 204, 113, 0.2) 0%, rgba(74, 144, 226, 0.2) 100%);
+        border: 1px solid rgba(46, 204, 113, 0.4);
+        color: var(--text-light);
+        padding: 16px;
+        border-radius: 12px;
+        margin: 20px 0;
+    }
+    
+    /* Info card */
+    .info-card {
+        background: linear-gradient(135deg, rgba(74, 144, 226, 0.15) 0%, rgba(127, 90, 240, 0.15) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(74, 144, 226, 0.3);
+        padding: 20px;
+        border-radius: 14px;
+        color: var(--text-light);
+        line-height: 1.7;
     }
 </style>
 """, unsafe_allow_html=True)
 
 
 def display_sidebar():
-    """Display configuration sidebar with dynamic model fetching and iteration navigation."""
+    """Display AI-themed configuration sidebar with dynamic model fetching and iteration navigation."""
     with st.sidebar:
-        st.title("⚙️ Configuration")
+        # AI-themed header
+        st.markdown('<div class="sidebar-section-header">🤖 AI AGENTS CONTROL</div>', unsafe_allow_html=True)
         
         # Iterations Navigator (if history exists)
         if "history" in st.session_state and st.session_state.history:
-            st.divider()
-            st.subheader("📍 Iterations")
+            st.markdown("")
+            st.markdown('<div class="sidebar-section-header">📘 ITERATION HISTORY</div>', unsafe_allow_html=True)
             st.caption("Navigate to specific revision cycles")
             
             for idx, cycle_data in enumerate(st.session_state.history):
@@ -117,15 +449,15 @@ def display_sidebar():
                     emoji = "🔄"
                     label = f"Cycle {cycle_num}: Re-evaluated"
                 
-                # Create anchor link
+                # Create anchor link with AI-themed styling
                 if st.button(f"{emoji} {label}", key=f"nav_{cycle_num}", use_container_width=True):
                     # Use Streamlit's experimental feature to scroll
                     st.session_state[f"scroll_to_cycle_{cycle_num}"] = True
                     st.rerun()
             
-            st.divider()
+            st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
         
-        st.subheader("🎭 Performer Agent LLM")
+        st.markdown('<div class="sidebar-section-header">🎭 PERFORMER AGENT</div>', unsafe_allow_html=True)
         performer_provider = st.selectbox(
             "Provider",
             list(MODEL_CATALOG.keys()),
@@ -150,9 +482,9 @@ def display_sidebar():
         
         st.caption(f"🎨 Temperature: 0.9 (creative)")
         
-        st.divider()
+        st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
         
-        st.subheader("🧐 Critic Agent LLM")
+        st.markdown('<div class="sidebar-section-header">🧠 CRITIC AGENT</div>', unsafe_allow_html=True)
         critic_provider = st.selectbox(
             "Provider",
             list(MODEL_CATALOG.keys()),
@@ -177,31 +509,30 @@ def display_sidebar():
         
         st.caption(f"🎯 Temperature: 0.3 (analytical)")
         
-        st.divider()
+        st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
         
-        st.subheader("📊 LangSmith")
+        st.markdown('<div class="sidebar-section-header">📊 LANGSMITH OBSERVABILITY</div>', unsafe_allow_html=True)
         st.markdown(f"**Project:** `{settings.langchain_project}`")
         st.markdown(f"**Tracing:** {'✅ Enabled' if settings.langchain_tracing_v2 == 'true' else '❌ Disabled'}")
         
         if settings.langchain_tracing_v2 == "true":
-            st.info("🔍 All runs are being traced to LangSmith")
+            st.success("🔍 All runs are being traced to LangSmith", icon="✅")
             st.markdown(
-                f"[View in LangSmith →]({settings.langchain_endpoint})"
+                f"[View Traces in LangSmith →]({settings.langchain_endpoint})"
             )
         
-        st.divider()
+        st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
         
-        st.subheader("ℹ️ About")
+        st.markdown('<div class="sidebar-section-header">ℹ️ SYSTEM INFO</div>', unsafe_allow_html=True)
         st.markdown("""
-        **Multi-Agent Joke System**
+        **Multi-Agent Joke System v2.0**
         
-        A POC demonstrating:
-        - 🎭 Performer Agent (creative)
-        - 🧐 Critic Agent (analytical)
-        - 🔄 LangGraph workflow
-        - 📈 LangSmith tracing
-        - 🔧 Runtime LLM selection
-        - 🆓 5 LLM providers (3 free!)
+        **Features:**
+        - 🤖 Dual AI Agents
+        - 🔄 LangGraph Orchestration
+        - 📈 Real-time Observability
+        - 🎨 5 LLM Providers
+        - ✨ Iterative Refinement
         """)
         
         st.divider()
@@ -242,22 +573,29 @@ Current Selection:
 
 
 def display_header():
-    """Display main header with explanation card."""
-    st.title("🎭 Multi-Agent Joke System")
+    """Display AI-themed hero header with futuristic design."""
+    st.markdown("""
+    <div class="hero-header">
+        <div class="hero-title">🤖 AI Joke Agents Debate</div>
+        <div class="hero-subtitle">
+            Two AI agents collaborate to craft and refine humor through iterative evaluation. 
+            Watch as the Performer creates and the Critic analyzes, forming a continuous improvement loop.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Explanation card
-    st.success("""
-    💡 **How this app works:**
+    # Info card explaining the system
+    st.markdown("""
+    <div class="info-card">
+        <strong>💡 How This Works:</strong><br><br>
+        <strong>🎭 Performer Agent</strong> → Generates creative, original jokes with high temperature (0.9)<br>
+        <strong>🧠 Critic Agent</strong> → Provides structured feedback with analytical precision (temp: 0.3)<br>
+        <strong>🔄 Iterative Refinement</strong> → Refine jokes through multiple cycles until perfect<br>
+        <strong>🌐 Multi-LLM Support</strong> → Choose from 5 providers: OpenAI, Groq, HuggingFace, Together AI, DeepInfra
+    </div>
+    """, unsafe_allow_html=True)
     
-    This app uses two AI agents — a **Performer** that writes jokes and a **Critic** that evaluates them. 
-    You can refine the joke multiple times using the action buttons below each evaluation.
-    
-    🎭 **Performer Agent** → Generates creative, original jokes  
-    🧐 **Critic Agent** → Provides structured feedback with metrics  
-    🔄 **Iterative Refinement** → Improve your joke through multiple cycles
-    """)
-    
-    st.divider()
+    st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
 
 
 def initialize_session_state():
@@ -274,7 +612,7 @@ def initialize_session_state():
 
 def show_diff_viewer(previous_joke: str, revised_joke: str, inside_expander: bool = False):
     """
-    Display a side-by-side diff viewer for joke revisions.
+    Display a side-by-side diff viewer for joke revisions with AI theme.
     
     Args:
         previous_joke: The original joke text
@@ -282,17 +620,17 @@ def show_diff_viewer(previous_joke: str, revised_joke: str, inside_expander: boo
         inside_expander: Whether this is being called from within an expander (to avoid nesting)
     """
     st.markdown('<div class="diff-container">', unsafe_allow_html=True)
-    st.markdown("### 🔍 What Changed?")
+    st.markdown('<div class="diff-header">🔍 What Changed?</div>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("**📝 Previous Joke**")
-        st.markdown(f"> {previous_joke}")
+        st.markdown("**📝 Previous Version**")
+        st.markdown(f'<div style="background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 10px; border-left: 3px solid #E74C3C; color: var(--text-light);">{previous_joke}</div>', unsafe_allow_html=True)
     
     with col2:
-        st.markdown("**✍️ Revised Joke**")
-        st.markdown(f"> {revised_joke}")
+        st.markdown("**✨ Revised Version**")
+        st.markdown(f'<div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 10px; border-left: 3px solid #2ECC71; color: var(--text-light);">{revised_joke}</div>', unsafe_allow_html=True)
     
     # Show text-level diff
     # Avoid nested expanders (Streamlit doesn't allow expander inside expander)
@@ -393,11 +731,15 @@ def display_cycle(cycle_data: dict, cycle_num: int, is_latest: bool = False, pre
 
 
 def display_cycle_content(cycle_data: dict, cycle_num: int, is_latest: bool, previous_joke: Optional[str] = None):
-    """Display the content of a cycle (joke + evaluation)."""
+    """Display the content of a cycle (joke + evaluation) with AI-themed styling."""
     cycle_type = cycle_data.get("cycle_type", "initial")
     
-    # Display joke
-    st.markdown("### 📝 Joke")
+    # Wrap in glass card
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    
+    # Display joke with agent badge
+    st.markdown('<div class="agent-badge agent-badge-performer">🤖 Performer Agent</div>', unsafe_allow_html=True)
+    st.markdown("### 😂 Generated Joke")
     st.markdown(f'<div class="joke-container">{cycle_data["joke"]}</div>', unsafe_allow_html=True)
     
     # Show diff viewer for revised jokes (cycle 2+)
@@ -405,7 +747,7 @@ def display_cycle_content(cycle_data: dict, cycle_num: int, is_latest: bool, pre
         # Pass inside_expander=True for non-latest cycles (which are wrapped in expanders)
         show_diff_viewer(previous_joke, cycle_data["joke"], inside_expander=not is_latest)
     
-    st.markdown("---")
+    st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
     
     # Display evaluation
     if is_latest:
@@ -413,118 +755,134 @@ def display_cycle_content(cycle_data: dict, cycle_num: int, is_latest: bool, pre
     else:
         display_evaluation(cycle_data["feedback"], cycle_num)
     
+    # Close glass card
+    st.markdown('</div>', unsafe_allow_html=True)
+    
     # Display models used
     if st.session_state.llm_config:
         display_models_used(st.session_state.llm_config, cycle_num)
 
 
 def display_evaluation(feedback: dict, cycle_num: int):
-    """Display evaluation without action buttons (for historical cycles)."""
-    st.markdown(f"### 🧐 Critic's Evaluation")
+    """Display evaluation without action buttons (for historical cycles) with AI theme."""
+    # Agent badge
+    st.markdown('<div class="agent-badge agent-badge-critic">🧠 Critic Agent</div>', unsafe_allow_html=True)
+    st.markdown(f"### 🧐 Critical Analysis")
     st.markdown('<div class="eval-container">', unsafe_allow_html=True)
+    
+    # Score badge
+    score = feedback["laughability_score"]
+    st.markdown(f'<div class="score-badge">Laughability Score: {score}/100</div>', unsafe_allow_html=True)
+    st.markdown("")
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        score = feedback["laughability_score"]
-        st.metric("Laughability Score", f"{score}/100")
-        
         # Visual indicator
         if score >= 80:
             st.success("🔥 Hilarious!")
         elif score >= 60:
             st.info("😄 Pretty funny!")
         elif score >= 40:
-            st.warning("😐 Meh...")
+            st.warning("😐 Needs work")
         else:
-            st.error("😬 Needs work")
+            st.error("😬 Weak")
     
     with col2:
-        st.metric("Age Appropriateness", feedback["age_appropriateness"])
+        st.markdown(f'<div class="eval-metric"><strong>Age Rating:</strong> {feedback["age_appropriateness"]}</div>', unsafe_allow_html=True)
     
     with col3:
-        st.metric("Status", "✅ Evaluated")
+        st.markdown('<div class="eval-metric"><strong>Status:</strong> ✅ Analyzed</div>', unsafe_allow_html=True)
     
-    # Detailed feedback in two columns
+    # Detailed feedback in structured format
     col_left, col_right = st.columns(2)
     
     with col_left:
-        st.markdown("**💪 Strengths:**")
+        st.markdown('<div class="eval-metric"><strong>💪 Strengths:</strong></div>', unsafe_allow_html=True)
         for strength in feedback["strengths"]:
-            st.markdown(f"- {strength}")
+            st.markdown(f"<div style='padding-left: 15px; color: #2ECC71;'>✓ {strength}</div>", unsafe_allow_html=True)
         
-        st.markdown("**⚠️ Weaknesses:**")
+        st.markdown("")
+        st.markdown('<div class="eval-metric"><strong>⚠️ Weaknesses:</strong></div>', unsafe_allow_html=True)
         for weakness in feedback["weaknesses"]:
-            st.markdown(f"- {weakness}")
+            st.markdown(f"<div style='padding-left: 15px; color: #E74C3C;'>✗ {weakness}</div>", unsafe_allow_html=True)
     
     with col_right:
-        st.markdown("**💡 Suggestions:**")
+        st.markdown('<div class="eval-metric"><strong>💡 Suggestions:</strong></div>', unsafe_allow_html=True)
         for suggestion in feedback["suggestions"]:
-            st.markdown(f"- {suggestion}")
+            st.markdown(f"<div style='padding-left: 15px; color: #4A90E2;'>→ {suggestion}</div>", unsafe_allow_html=True)
     
-    st.markdown(f"**📝 Overall Verdict:** {feedback['overall_verdict']}")
+    st.markdown("")
+    st.markdown(f'<div class="eval-metric"><strong>📝 Overall Verdict:</strong> {feedback["overall_verdict"]}</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 
 def display_evaluation_with_actions(feedback: dict, cycle_num: int):
-    """Display evaluation with action buttons (for the latest cycle only)."""
-    st.markdown(f"### 🧐 Critic's Evaluation")
+    """Display evaluation with action buttons (for the latest cycle only) with AI theme."""
+    # Agent badge
+    st.markdown('<div class="agent-badge agent-badge-critic">🧠 Critic Agent</div>', unsafe_allow_html=True)
+    st.markdown(f"### 🧐 Critical Analysis")
     st.markdown('<div class="eval-container">', unsafe_allow_html=True)
     
-    # Display metrics first
+    # Score badge
+    score = feedback["laughability_score"]
+    st.markdown(f'<div class="score-badge">Laughability Score: {score}/100</div>', unsafe_allow_html=True)
+    st.markdown("")
+    
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        score = feedback["laughability_score"]
-        st.metric("Laughability Score", f"{score}/100")
-        
         # Visual indicator
         if score >= 80:
             st.success("🔥 Hilarious!")
         elif score >= 60:
             st.info("😄 Pretty funny!")
         elif score >= 40:
-            st.warning("😐 Meh...")
+            st.warning("😐 Needs work")
         else:
-            st.error("😬 Needs work")
+            st.error("😬 Weak")
     
     with col2:
-        st.metric("Age Appropriateness", feedback["age_appropriateness"])
+        st.markdown(f'<div class="eval-metric"><strong>Age Rating:</strong> {feedback["age_appropriateness"]}</div>', unsafe_allow_html=True)
     
     with col3:
-        st.metric("Status", "✅ Evaluated")
+        st.markdown('<div class="eval-metric"><strong>Status:</strong> ✅ Analyzed</div>', unsafe_allow_html=True)
     
-    # Detailed feedback in two columns
+    # Detailed feedback in structured format
     col_left, col_right = st.columns(2)
     
     with col_left:
-        st.markdown("**💪 Strengths:**")
+        st.markdown('<div class="eval-metric"><strong>💪 Strengths:</strong></div>', unsafe_allow_html=True)
         for strength in feedback["strengths"]:
-            st.markdown(f"- {strength}")
+            st.markdown(f"<div style='padding-left: 15px; color: #2ECC71;'>✓ {strength}</div>", unsafe_allow_html=True)
         
-        st.markdown("**⚠️ Weaknesses:**")
+        st.markdown("")
+        st.markdown('<div class="eval-metric"><strong>⚠️ Weaknesses:</strong></div>', unsafe_allow_html=True)
         for weakness in feedback["weaknesses"]:
-            st.markdown(f"- {weakness}")
+            st.markdown(f"<div style='padding-left: 15px; color: #E74C3C;'>✗ {weakness}</div>", unsafe_allow_html=True)
     
     with col_right:
-        st.markdown("**💡 Suggestions:**")
+        st.markdown('<div class="eval-metric"><strong>💡 Suggestions:</strong></div>', unsafe_allow_html=True)
         for suggestion in feedback["suggestions"]:
-            st.markdown(f"- {suggestion}")
+            st.markdown(f"<div style='padding-left: 15px; color: #4A90E2;'>→ {suggestion}</div>", unsafe_allow_html=True)
     
-    st.markdown(f"**📝 Overall Verdict:** {feedback['overall_verdict']}")
+    st.markdown("")
+    st.markdown(f'<div class="eval-metric"><strong>📝 Overall Verdict:</strong> {feedback["overall_verdict"]}</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Action buttons section (if workflow not complete)
     if not st.session_state.workflow_complete:
         st.markdown('<div class="button-group">', unsafe_allow_html=True)
-        st.markdown("#### 🎯 What would you like to do next?")
-        st.caption("Choose an action below to continue refining your joke")
+        st.markdown('<div style="text-align: center; margin-bottom: 15px;">', unsafe_allow_html=True)
+        st.markdown('<h4 style="color: var(--primary); margin: 0;">🎯 Next Action</h4>', unsafe_allow_html=True)
+        st.markdown('<p style="color: var(--text-muted); font-size: 14px; margin: 5px 0 0 0;">Choose how to proceed with this joke</p>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
         
         with col1:
             refine_button = st.button(
-                "✅ Revise Joke\n(Apply Feedback)",
+                "✍️ Revise Joke\n(Apply Feedback)",
                 key=f"refine_{cycle_num}",
                 help="Accept the evaluation and ask the Performer to revise the joke based on the Critic's feedback",
                 type="primary",
@@ -533,7 +891,7 @@ def display_evaluation_with_actions(feedback: dict, cycle_num: int):
         
         with col2:
             reevaluate_button = st.button(
-                "❌ Re-Evaluate\nThis Joke",
+                "🔁 Re-Evaluate\nThis Joke",
                 key=f"reevaluate_{cycle_num}",
                 help="Keep the same joke but ask the Critic to provide fresh feedback with a different perspective",
                 type="secondary",
@@ -542,7 +900,7 @@ def display_evaluation_with_actions(feedback: dict, cycle_num: int):
         
         with col3:
             complete_button = st.button(
-                "🎉 I'm All Set",
+                "✔️ I'm All Set",
                 key=f"complete_{cycle_num}",
                 help="Finish the refinement process and mark the workflow as complete",
                 use_container_width=True
@@ -568,7 +926,7 @@ def handle_refine_action():
     latest_cycle = st.session_state.history[-1]
     
     try:
-        with st.spinner("✍️ Performer is revising the joke based on feedback..."):
+        with st.spinner("🤖 Performer Agent is revising the joke based on feedback..."):
             # Get the workflow from session state
             workflow = st.session_state.workflow
             
@@ -586,7 +944,7 @@ def handle_refine_action():
                 raise ValueError("Failed to generate revised joke")
         
         # Evaluate the revised joke
-        with st.spinner("🧐 Critic is evaluating the revised joke..."):
+        with st.spinner("🧠 Critic Agent is evaluating the revised joke..."):
             # evaluate_joke returns a dict directly (the feedback)
             new_feedback = workflow.evaluate_joke(revised_joke)
             
@@ -597,10 +955,11 @@ def handle_refine_action():
         st.session_state.history.append({
             "joke": revised_joke,
             "feedback": new_feedback,
-            "cycle_type": "revised"
+            "cycle_type": "revised",
+            "previous_joke": latest_cycle["joke"]  # Store previous joke for diff
         })
         
-        st.success("✅ Joke revised and re-evaluated successfully!")
+        st.markdown('<div class="success-message">✅ Joke revised and re-evaluated successfully!</div>', unsafe_allow_html=True)
         st.rerun()
         
     except Exception as e:
@@ -619,7 +978,7 @@ def handle_reevaluate_action():
     latest_cycle = st.session_state.history[-1]
     
     try:
-        with st.spinner("🔄 Critic is running a new evaluation..."):
+        with st.spinner("🧠 Critic Agent is running a new evaluation with fresh perspective..."):
             # Get the workflow from session state
             workflow = st.session_state.workflow
             
@@ -640,7 +999,7 @@ def handle_reevaluate_action():
             "cycle_type": "reevaluated"
         })
         
-        st.success("✅ Joke re-evaluated with fresh perspective!")
+        st.markdown('<div class="success-message">✅ Joke re-evaluated with fresh perspective!</div>', unsafe_allow_html=True)
         st.rerun()
         
     except Exception as e:
@@ -653,7 +1012,7 @@ def handle_reevaluate_action():
 def handle_complete_action():
     """Handle the 'I'm All Set' button action."""
     st.session_state.workflow_complete = True
-    st.success("🎉 Workflow complete! Great job refining your joke!")
+    st.markdown('<div class="success-message">🎉 Workflow complete! Your joke has been refined to perfection!</div>', unsafe_allow_html=True)
     st.balloons()
     st.rerun()
 
@@ -696,23 +1055,25 @@ def main():
         st.info("Please set the required API keys in your `.env` file or Streamlit Cloud secrets.")
         st.stop()
     
-    # Input section
-    st.subheader("🎯 Generate a Joke")
+    # Input section with AI-themed styling
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown("### 🎯 Generate a New Joke")
     
     col1, col2 = st.columns([3, 1])
     
     with col1:
         prompt = st.text_input(
-            "Enter a topic or theme:",
-            placeholder="e.g., programming, cats, coffee, etc.",
-            help="What should the joke be about?",
-            key="joke_prompt"
+            "Topic or Theme:",
+            placeholder="e.g., programming, artificial intelligence, robots, etc.",
+            help="What should the AI agents create a joke about?",
+            key="joke_prompt",
+            label_visibility="collapsed"
         )
     
     with col2:
-        st.write("")  # Spacing
-        st.write("")  # Spacing
-        generate_button = st.button("🎭 Generate Joke", type="primary", use_container_width=True)
+        generate_button = st.button("🚀 Generate", type="primary", use_container_width=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Generate joke on button click
     if generate_button:
@@ -724,7 +1085,7 @@ def main():
             st.session_state.workflow_complete = False
             
             try:
-                with st.spinner(f"🎭 Performer is writing a new joke about '{prompt}'..."):
+                with st.spinner(f"🤖 Performer Agent is crafting a joke about '{prompt}'..."):
                     # Initialize workflow with runtime-selected LLMs
                     performer_llm = get_performer_llm(
                         provider=llm_config["performer_provider"],
@@ -744,7 +1105,7 @@ def main():
                     result = workflow.run(prompt)
                 
                 # Evaluate the joke
-                with st.spinner("🧐 Critic is evaluating the joke..."):
+                with st.spinner("🧠 Critic Agent is analyzing the joke..."):
                     # Add initial result to history
                     st.session_state.history.append({
                         "joke": result["joke"],
@@ -753,7 +1114,7 @@ def main():
                     })
                 
                 # Display success
-                st.success("✅ Joke generated and evaluated successfully!")
+                st.markdown('<div class="success-message">✅ Joke generated and evaluated successfully!</div>', unsafe_allow_html=True)
                 st.rerun()
                 
             except Exception as e:
@@ -764,9 +1125,9 @@ def main():
     
     # Display history if it exists
     if st.session_state.history:
-        st.divider()
-        st.markdown("## 📚 Refinement History")
-        st.caption(f"Total cycles: {len(st.session_state.history)}")
+        st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
+        st.markdown('<h2 style="color: var(--primary); font-size: 28px; font-weight: 700;">📚 Refinement History</h2>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color: var(--text-muted); font-size: 14px;">Total iterations: <strong>{len(st.session_state.history)}</strong></p>', unsafe_allow_html=True)
         
         # Display all cycles
         for idx, cycle_data in enumerate(st.session_state.history):
@@ -780,49 +1141,66 @@ def main():
             
             display_cycle(cycle_data, cycle_num, is_latest, previous_joke)
             
-            # Add separator between cycles (except after the last one)
+            # Add gradient separator between cycles (except after the last one)
             if not is_latest:
-                st.markdown("---")
+                st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
         
         # Show completion message if workflow is complete
         if st.session_state.workflow_complete:
-            st.success("🎉 Workflow complete! You can generate a new joke above.")
-            st.info("📊 **Final Result:** Check the cycle history above to see how your joke evolved!")
+            st.markdown("""
+            <div class="success-message" style="text-align: center; padding: 25px;">
+                <h3 style="color: #2ECC71; margin: 0;">🎉 Refinement Complete!</h3>
+                <p style="margin-top: 10px; color: var(--text-light);">Your joke has been perfected through collaborative AI analysis.</p>
+                <p style="color: var(--text-muted); font-size: 14px;">Generate a new joke above to start another refinement cycle.</p>
+            </div>
+            """, unsafe_allow_html=True)
         
         # LangSmith trace info
-        st.divider()
+        st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
         if settings.langchain_tracing_v2 == "true":
-            st.info("🔍 All interactions are traced in LangSmith. Check your project dashboard for detailed execution traces.")
+            st.markdown("""
+            <div class="info-card" style="text-align: center;">
+                🔍 <strong>LangSmith Observability Active</strong><br>
+                <span style="font-size: 14px; color: var(--text-muted);">All AI interactions are being traced for analysis and debugging</span>
+            </div>
+            """, unsafe_allow_html=True)
         
         # Reset button
         col_reset1, col_reset2, col_reset3 = st.columns([1, 1, 2])
         with col_reset1:
-            if st.button("🔄 Start Over", help="Clear history and start fresh", use_container_width=True):
+            if st.button("🔄 Start Over", help="Clear history and start fresh", use_container_width=True, type="secondary"):
                 st.session_state.history = []
                 st.session_state.workflow_complete = False
                 st.session_state.workflow = None
                 st.rerun()
     
-    # Example prompts
+    # Example prompts with AI-themed styling
     if not st.session_state.history:
-        with st.expander("💡 Need inspiration? Try these topics:"):
-            example_prompts = [
-                "artificial intelligence",
-                "working from home",
-                "coffee addiction",
-                "cats vs dogs",
-                "programming bugs",
-                "dad jokes",
-                "quantum physics",
-                "social media"
-            ]
-            
-            cols = st.columns(4)
-            for idx, example in enumerate(example_prompts):
-                with cols[idx % 4]:
-                    if st.button(example, key=f"example_{idx}", use_container_width=True):
-                        st.session_state["joke_prompt"] = example
-                        st.rerun()
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown("### 💡 Need Inspiration?")
+        st.caption("Try one of these AI-themed topics")
+        
+        example_prompts = [
+            "🤖 artificial intelligence",
+            "💻 programming bugs",
+            "☕ coffee addiction",
+            "🏠 working from home",
+            "🐱 cats vs dogs",
+            "👨 dad jokes",
+            "⚛️ quantum physics",
+            "📱 social media"
+        ]
+        
+        cols = st.columns(4)
+        for idx, example in enumerate(example_prompts):
+            with cols[idx % 4]:
+                if st.button(example, key=f"example_{idx}", use_container_width=True):
+                    # Remove emoji from the prompt value
+                    clean_prompt = example.split(" ", 1)[1]
+                    st.session_state["joke_prompt"] = clean_prompt
+                    st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
