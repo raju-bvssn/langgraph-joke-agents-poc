@@ -80,65 +80,102 @@ The Windsurf UI automatically adapts to mobile devices:
 
 ## 🎤 Voice Playback Feature
 
-**NEW in v3.0**: Hear your jokes delivered in expressive, professional AI voices powered by OpenAI TTS!
+**NEW in v3.1**: Hear your jokes delivered in expressive, professional AI voices powered by **Google Cloud Text-to-Speech** with a **generous free tier**!
 
 ### How It Works
 
-Each generated joke includes a voice style selector and **🎤 Generate Voice** button:
+Each generated joke includes a voice style selector and **🎤 Listen** button:
 
 ```
 📝 Generated Joke
 "Why did the AI cross the road? To optimize the other side!"
 
-[🎙️ Voice Style ▼]  [🎤 Generate Voice]  ← Select style and generate
+[🎙️ Voice Style ▼]  [🎤 Listen]  ← Select style and generate
 ```
 
 ### Voice Features
 
-1. **6 Professional Voice Styles**
-   - 🎭 **Stand-up Comedy** (fast, energetic) - Perfect for punchlines
-   - 🗣️ **Narrator** (deep, measured) - Professional delivery
-   - 💬 **Conversational** (natural) - Casual and friendly
-   - ⚡ **Energetic** (fast, excited) - High-energy performance
-   - 🎙️ **Professional** (clear) - Polished presentation
-   - 🌟 **Expressive** (warm) - Emotional and engaging
+1. **6 Professional Voice Styles (Google Wavenet & Neural2)**
+   - 🎭 **Stand-up Comedy** (en-US-Wavenet-J) - Energetic male voice, 1.07x speed, +2 pitch
+   - 🗣️ **Deep Narrator** (en-US-Wavenet-D) - Deep, measured voice, 0.95x speed, -2 pitch
+   - 💬 **Conversational** (en-US-Wavenet-A) - Natural, friendly voice, 1.0x speed
+   - ⚡ **High Energy** (en-US-Wavenet-F) - Fast, excited delivery, 1.15x speed, +3 pitch
+   - 📚 **Storyteller** (en-US-Neural2-J) - Warm, engaging narrative, 1.05x speed
+   - 📰 **News Anchor** (en-US-Neural2-D) - Clear, professional presentation, 1.0x speed
 
-2. **OpenAI TTS Integration**
-   - Powered by OpenAI's advanced text-to-speech models
-   - Natural human-like intonation and emotion
+2. **Google Cloud TTS Integration**
+   - Powered by Google's advanced Wavenet and Neural2 voices
+   - Natural human-like intonation with expressive delivery
    - High-quality MP3 audio output
-   - Optimized speech rates for comedy timing
+   - Customizable pitch and speaking rate per style
+   - **FREE TIER**: 4 million characters per month (≈ 80,000 jokes!)
 
 3. **Visual Feedback**
    - Loading spinner: "🎵 Generating [style] voice..."
    - Success confirmation when audio is ready
+   - Voice description shown for each style
    - Animated waveform indicator during playback
    - Built-in audio controls (play, pause, volume, seek)
 
 4. **Smart Caching & Performance**
-   - Audio cached per joke and voice style combination
-   - `@st.cache_data` prevents duplicate API calls
+   - Audio cached per joke + voice + pitch + rate combination
+   - `@st.cache_data(ttl=3600)` prevents duplicate API calls
    - Instant playback on repeated listens
    - Session state stores audio across refreshes
    - Cost-efficient (only generates when style changes)
+   - REST API approach (no heavy SDK dependencies)
 
 ### Benefits
 
+- **FREE Usage**: Google Cloud TTS offers 4M characters/month free (more than enough!)
 - **Hear the Timing**: Comedy is all about timing—hear how the joke sounds with different deliveries
 - **Accessibility**: Makes jokes accessible to users with visual impairments
-- **Entertainment**: Professional AI voices add an extra layer of engagement
-- **Testing Delivery**: Try multiple voice styles to find the best punchline delivery
-- **Voice Variety**: Switch between 6 distinct voice personalities
+- **Entertainment**: Professional Wavenet voices add an extra layer of engagement
+- **Testing Delivery**: Try 6 distinct voice styles to find the best punchline delivery
+- **Voice Variety**: Switch between energetic, deep, conversational, and more
+- **Natural Prosody**: Wavenet voices have human-like pitch and rhythm
+
+### Setup Instructions
+
+#### 1. Get a Google Cloud API Key (Free)
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project (or select existing)
+3. Enable the **Cloud Text-to-Speech API**
+4. Go to **APIs & Services → Credentials**
+5. Click **Create Credentials → API Key**
+6. Copy your API key
+
+#### 2. Add API Key to Streamlit
+
+**For Streamlit Cloud:**
+1. Go to your app settings
+2. Click **Secrets**
+3. Add:
+   ```toml
+   GOOGLE_API_KEY = "your-api-key-here"
+   ```
+
+**For Local Development:**
+1. Add to `.env` file:
+   ```bash
+   GOOGLE_API_KEY=your-api-key-here
+   ```
 
 ### Technical Details
 
-- **Engine**: OpenAI Text-to-Speech API (tts-1 model)
-- **Voice Models**: alloy, echo, fable, onyx, nova, shimmer
+- **Engine**: Google Cloud Text-to-Speech REST API
+- **Voice Models**: 
+  - Wavenet voices (en-US-Wavenet-A, D, F, J)
+  - Neural2 voices (en-US-Neural2-D, J)
 - **Format**: MP3 audio (high quality)
-- **Speed Range**: 0.95x - 1.15x (optimized per style)
+- **Pitch Range**: -20 to +20 (we use -2 to +3)
+- **Speed Range**: 0.25x - 4.0x (we use 0.95x - 1.15x)
 - **Caching**: `@st.cache_data(ttl=3600)` for 1-hour cache
 - **Fallback**: Graceful error handling with helpful troubleshooting
-- **API Key**: Uses `OPENAI_API_KEY` from Streamlit secrets or environment
+- **API Key**: Uses `GOOGLE_API_KEY` from Streamlit secrets or environment
+- **Cost**: FREE for first 4 million characters/month
+- **Implementation**: Direct REST API (no SDK overhead)
 
 ### Usage Example
 

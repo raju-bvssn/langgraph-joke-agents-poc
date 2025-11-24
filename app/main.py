@@ -1,7 +1,7 @@
 """
 Streamlit UI for the Multi-Agent Joke System.
 Provides an interactive interface to generate and evaluate jokes with enhanced UX.
-Features: Windsurf-inspired AI theme + OpenAI TTS Voice playback for jokes.
+Features: Windsurf-inspired AI theme + Google Cloud TTS Voice playback for jokes.
 """
 import streamlit as st
 import os
@@ -11,7 +11,6 @@ from typing import Dict, Any, List, Optional
 import difflib
 import base64
 import io
-from openai import OpenAI
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -19,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.utils.llm import get_performer_llm, get_critic_llm, get_llm, fetch_openai_models
 from app.utils.settings import settings, MODEL_CATALOG
 from app.graph.workflow import JokeWorkflow
+from app.utils.tts import generate_standup_voice, VOICE_STYLES, get_voice_config
 
 
 # Cache the dynamic OpenAI models to avoid repeated API calls
@@ -28,44 +28,22 @@ def get_openai_models_cached():
     return fetch_openai_models()
 
 
-# Voice generation function using OpenAI TTS
+# Cached TTS function for performance
 @st.cache_data(show_spinner=False, ttl=3600)
-def generate_standup_voice(text: str, voice: str = "alloy", speed: float = 1.07) -> Optional[bytes]:
+def cached_tts(text: str, voice_name: str, pitch: float, rate: float) -> Optional[bytes]:
     """
-    Generate expressive audio from text using OpenAI's TTS API.
+    Generate and cache audio using Google Cloud TTS.
     
     Args:
         text: The joke text to convert to speech
-        voice: OpenAI voice preset (alloy, echo, fable, onyx, nova, shimmer)
-        speed: Speech speed (0.25 to 4.0, default 1.07 for slightly faster delivery)
+        voice_name: Google Cloud voice name
+        pitch: Voice pitch adjustment
+        rate: Speaking rate
     
     Returns:
         Audio bytes in MP3 format, or None on error
     """
-    try:
-        # Get OpenAI API key from secrets or environment
-        api_key = st.secrets.get("OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
-        if not api_key:
-            st.error("OpenAI API key not found. Please configure it in Streamlit secrets.")
-            return None
-        
-        # Initialize OpenAI client
-        client = OpenAI(api_key=api_key)
-        
-        # Generate speech using OpenAI TTS
-        response = client.audio.speech.create(
-            model="tts-1",  # Use tts-1 for faster generation, tts-1-hd for higher quality
-            voice=voice,
-            speed=speed,
-            input=text
-        )
-        
-        # Return audio bytes
-        return response.content
-        
-    except Exception as e:
-        st.error(f"Error generating voice with OpenAI TTS: {str(e)}")
-        return None
+    return generate_standup_voice(text, voice_name, pitch, rate)
 
 
 # Page configuration
@@ -1093,7 +1071,7 @@ def display_cycle(cycle_data: dict, cycle_num: int, is_latest: bool = False, pre
 
 def display_voice_button(joke_text: str, cycle_num: int):
     """
-    Display voice playback button for a joke with OpenAI TTS and voice style selection.
+    Display voice playback button for a joke with Google Cloud TTS and voice style selection.
     
     Args:
         joke_text: The joke text to convert to speech
@@ -1103,31 +1081,29 @@ def display_voice_button(joke_text: str, cycle_num: int):
     col1, col2, col3 = st.columns([2, 2, 2])
     
     with col1:
-        # Voice style selector
-        voice_mapping = {
-            "🎭 Stand-up Comedy": ("alloy", 1.07),  # Fast, energetic
-            "🗣️ Narrator": ("onyx", 0.95),  # Deep, measured
-            "💬 Conversational": ("nova", 1.0),  # Natural
-            "⚡ Energetic": ("shimmer", 1.15),  # Fast, excited
-            "🎙️ Professional": ("echo", 1.0),  # Clear, professional
-            "🌟 Expressive": ("fable", 1.05)  # Warm, expressive
-        }
-        
+        # Voice style selector using Google Cloud voices
         voice_style = st.selectbox(
             "🎙️ Voice Style",
-            options=list(voice_mapping.keys()),
+            options=list(VOICE_STYLES.keys()),
             index=0,  # Default to Stand-up Comedy
-            key=f"voice_style_{cycle_num}"
+            key=f"voice_style_{cycle_num}",
+            help="Select a voice style for the joke delivery"
         )
         
-        voice_name, voice_speed = voice_mapping[voice_style]
+        # Get voice configuration
+        voice_config = get_voice_config(voice_style)
     
     with col2:
         # Voice generation button
-        if st.button(f"🎤 Generate Voice", key=f"voice_btn_{cycle_num}", use_container_width=True):
+        if st.button(f"🎤 Listen", key=f"voice_btn_{cycle_num}", use_container_width=True):
             with st.spinner(f"🎵 Generating {voice_style} voice..."):
                 try:
-                    audio_bytes = generate_standup_voice(joke_text, voice=voice_name, speed=voice_speed)
+                    audio_bytes = cached_tts(
+                        joke_text, 
+                        voice_config["voice"],
+                        voice_config["pitch"],
+                        voice_config["rate"]
+                    )
                     
                     if audio_bytes:
                         # Store audio in session state for this cycle
@@ -1137,11 +1113,16 @@ def display_voice_button(joke_text: str, cycle_num: int):
                         st.success("✅ Voice generated!")
                         st.rerun()
                     else:
-                        st.warning("⚠️ Could not generate voice. Check your OpenAI API key.")
+                        st.warning("⚠️ Could not generate voice. Check your Google Cloud API key.")
                         
                 except Exception as e:
                     st.error(f"Voice generation error: {str(e)}")
-                    st.info("💡 Make sure your OpenAI API key is configured in Streamlit secrets.")
+                    st.info("💡 Make sure GOOGLE_API_KEY is configured in Streamlit secrets.")
+    
+    with col3:
+        # Show voice description
+        if voice_style in VOICE_STYLES:
+            st.caption(f"ℹ️ {VOICE_STYLES[voice_style]['description']}")
     
     # Display audio player if audio has been generated for this cycle
     if "cycle_audio" in st.session_state and cycle_num in st.session_state["cycle_audio"]:
