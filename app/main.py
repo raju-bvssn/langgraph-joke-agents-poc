@@ -272,13 +272,14 @@ def initialize_session_state():
         st.session_state.llm_config = None
 
 
-def show_diff_viewer(previous_joke: str, revised_joke: str):
+def show_diff_viewer(previous_joke: str, revised_joke: str, inside_expander: bool = False):
     """
     Display a side-by-side diff viewer for joke revisions.
     
     Args:
         previous_joke: The original joke text
         revised_joke: The revised joke text
+        inside_expander: Whether this is being called from within an expander (to avoid nesting)
     """
     st.markdown('<div class="diff-container">', unsafe_allow_html=True)
     st.markdown("### 🔍 What Changed?")
@@ -294,7 +295,10 @@ def show_diff_viewer(previous_joke: str, revised_joke: str):
         st.markdown(f"> {revised_joke}")
     
     # Show text-level diff
-    with st.expander("📊 Detailed Changes"):
+    # Avoid nested expanders (Streamlit doesn't allow expander inside expander)
+    if inside_expander:
+        # Just show directly without another expander
+        st.markdown("**📊 Detailed Changes:**")
         previous_words = previous_joke.split()
         revised_words = revised_joke.split()
         
@@ -310,6 +314,24 @@ def show_diff_viewer(previous_joke: str, revised_joke: str):
             st.code(diff_text, language=None)
         else:
             st.info("No changes detected")
+    else:
+        # Use expander for latest cycle (not nested)
+        with st.expander("📊 Detailed Changes"):
+            previous_words = previous_joke.split()
+            revised_words = revised_joke.split()
+            
+            diff = difflib.unified_diff(
+                previous_words,
+                revised_words,
+                lineterm='',
+                n=0
+            )
+            
+            diff_text = '\n'.join(diff)
+            if diff_text:
+                st.code(diff_text, language=None)
+            else:
+                st.info("No changes detected")
     
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -380,7 +402,8 @@ def display_cycle_content(cycle_data: dict, cycle_num: int, is_latest: bool, pre
     
     # Show diff viewer for revised jokes (cycle 2+)
     if cycle_num > 1 and cycle_type == "revised" and previous_joke and previous_joke != cycle_data["joke"]:
-        show_diff_viewer(previous_joke, cycle_data["joke"])
+        # Pass inside_expander=True for non-latest cycles (which are wrapped in expanders)
+        show_diff_viewer(previous_joke, cycle_data["joke"], inside_expander=not is_latest)
     
     st.markdown("---")
     
