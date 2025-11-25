@@ -11,6 +11,65 @@ This POC implements a simple but complete multi-agent workflow:
 3. **🔄 LangGraph Workflow**: Orchestrates agent collaboration with state management
 4. **📊 LangSmith Integration**: Full tracing and observability for all agent interactions
 
+## 🏛️ Modular Architecture
+
+This project features a **production-quality modular architecture** for maintainability and scalability:
+
+### Using the New Modules
+
+```python
+# LLM Provider Factory
+from app.llm import create_performer_llm, create_critic_llm, MODEL_CATALOG
+
+performer_llm = create_performer_llm("groq", "llama-3.3-70b-versatile")
+critic_llm = create_critic_llm("openai", "gpt-4o-mini")
+```
+
+```python
+# Agent Factory
+from app.agents.factory import AgentFactory
+
+performer, critic = AgentFactory.create_agent_pair(
+    performer_provider="groq",
+    critic_provider="openai"
+)
+```
+
+```python
+# TTS Factory with Fallback
+from app.tts import generate_audio, VOICE_STYLES
+
+audio = generate_audio(joke_text, voice_name, pitch, rate)
+```
+
+```python
+# Session State Management
+from app.state import SessionState
+
+SessionState.initialize()
+SessionState.add_to_history(joke, feedback, "initial")
+history = SessionState.get_history()
+```
+
+```python
+# UI Theming
+from app.ui import apply_windsurf_theme
+
+apply_windsurf_theme()  # Applies complete dark theme
+```
+
+### Key Modules
+
+| Module | Purpose | Key Files |
+|--------|---------|-----------|
+| `app.llm` | LLM provider abstraction | `providers.py`, `factory.py`, `model_catalog.py` |
+| `app.tts` | Text-to-speech with fallback | `google_tts.py`, `fallback_tts.py`, `factory.py` |
+| `app.state` | Session state management | `session.py` |
+| `app.agents` | Agent creation & management | `factory.py`, `performer.py`, `critic.py` |
+| `app.graph` | Workflow & evaluation | `workflow.py`, `evaluator.py` |
+| `app.ui` | UI components & theming | `theming.py` |
+| `app.utils` | Utilities & configuration | `exceptions.py`, `caching.py`, `formatting.py` |
+
 ## ✨ Features
 
 - ✅ **Complete Multi-Agent System** with state passing
@@ -286,28 +345,62 @@ Here's a real example of how iterative refinement works:
 
 ## 🏗️ Project Structure
 
+**NEW: Modular Architecture** ⭐
+
+The project has been refactored into a production-quality modular architecture with clean separation of concerns:
+
 ```
 langgraph-joke-agents-poc/
 ├── app/
-│   ├── agents/
+│   ├── agents/                  # Agent implementations
 │   │   ├── __init__.py
-│   │   ├── performer.py       # Joke generation agent
-│   │   └── critic.py          # Joke evaluation agent
-│   ├── graph/
+│   │   ├── performer.py          # Joke generation agent
+│   │   ├── critic.py             # Joke evaluation agent
+│   │   └── factory.py            # ⭐ NEW: Agent factory for easy instantiation
+│   ├── graph/                   # LangGraph workflow
 │   │   ├── __init__.py
-│   │   └── workflow.py        # LangGraph workflow orchestration
-│   ├── utils/
+│   │   ├── workflow.py           # LangGraph workflow orchestration
+│   │   └── evaluator.py          # ⭐ NEW: Feedback formatting utilities
+│   ├── llm/                     # ⭐ NEW: LLM provider abstraction
 │   │   ├── __init__.py
-│   │   ├── llm.py            # LLM configuration & provider setup
-│   │   └── settings.py       # Environment settings
+│   │   ├── providers.py          # Provider classes (OpenAI, Groq, HF, etc.)
+│   │   ├── factory.py            # Factory functions for LLM creation
+│   │   └── model_catalog.py      # Centralized model lists & defaults
+│   ├── tts/                     # ⭐ NEW: Text-to-Speech abstraction
+│   │   ├── __init__.py
+│   │   ├── google_tts.py         # Google Cloud TTS implementation
+│   │   ├── fallback_tts.py       # Browser-based TTS fallback
+│   │   └── factory.py            # TTS engine factory
+│   ├── state/                   # ⭐ NEW: Session state management
+│   │   ├── __init__.py
+│   │   └── session.py            # Type-safe session state wrapper
+│   ├── ui/                      # ⭐ NEW: UI components
+│   │   ├── __init__.py
+│   │   └── theming.py            # Windsurf theme CSS & utilities
+│   ├── utils/                   # Utilities & configuration
+│   │   ├── __init__.py
+│   │   ├── settings.py           # Environment settings
+│   │   ├── exceptions.py         # ⭐ NEW: Custom exception classes
+│   │   ├── caching.py            # ⭐ NEW: Caching decorators
+│   │   └── formatting.py         # ⭐ NEW: Text formatting utilities
 │   ├── __init__.py
-│   └── main.py               # Streamlit UI (primary application)
-├── main.py                   # Root entry point (for deployment)
-├── requirements.txt          # Python dependencies
-├── .env.example             # Environment variable template
-├── .gitignore               # Git ignore rules
-└── README.md                # This file
+│   └── main.py                  # Streamlit UI (uses modular imports)
+├── main.py                      # Root entry point (for deployment)
+├── requirements.txt             # Python dependencies
+├── .env.example                # Environment variable template
+├── .gitignore                  # Git ignore rules
+├── REFACTORING_SUMMARY.md      # ⭐ NEW: Architecture documentation
+└── README.md                   # This file
 ```
+
+### 🎯 Architecture Benefits
+
+1. **Modularity** - Each module has a single, well-defined responsibility
+2. **Testability** - Smaller modules are easier to unit test
+3. **Maintainability** - Changes are localized to specific modules
+4. **Scalability** - Easy to add new providers, TTS engines, etc.
+5. **Type Safety** - Better type hints and abstractions
+6. **Reusability** - Components can be reused across different interfaces
 
 ## 🚀 Quick Start
 
