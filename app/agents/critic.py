@@ -2,6 +2,8 @@
 Critic Agent - Evaluates jokes with structured metrics and feedback.
 Uses lower temperature for consistent, analytical evaluation.
 """
+import json
+import re
 from typing import Dict, Any, List, Literal
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -77,6 +79,39 @@ You MUST respond with valid JSON matching this exact structure:
         self.llm = llm
         self.parser = JsonOutputParser(pydantic_object=JokeFeedback)
     
+    def _extract_json_from_response(self, content: str) -> str:
+        """
+        Extract JSON from LLM response, handling markdown code blocks and extra text.
+        
+        Args:
+            content: Raw LLM response
+        
+        Returns:
+            Cleaned JSON string
+        """
+        content = content.strip()
+        
+        # Remove markdown code blocks
+        if content.startswith("```json"):
+            content = content[7:]
+        elif content.startswith("```"):
+            content = content[3:]
+        
+        if content.endswith("```"):
+            content = content[:-3]
+        
+        content = content.strip()
+        
+        # Try to find JSON object in the content using regex
+        json_pattern = r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}'
+        matches = re.findall(json_pattern, content, re.DOTALL)
+        
+        if matches:
+            # Return the first (and likely only) JSON object found
+            return matches[0]
+        
+        return content
+    
     def evaluate_joke(self, joke: str) -> JokeFeedback:
         """
         Evaluate a joke and provide structured feedback.
@@ -97,20 +132,33 @@ You MUST respond with valid JSON matching this exact structure:
         
         response = self.llm.invoke(messages)
         
-        # Parse JSON response
+        # Parse JSON response with robust error handling
         try:
-            feedback_dict = self.parser.parse(response.content)
+            # Extract and clean JSON from response
+            cleaned_content = self._extract_json_from_response(response.content)
+            
+            # Try LangChain parser first
+            try:
+                feedback_dict = self.parser.parse(cleaned_content)
+            except:
+                # Fallback to standard JSON parsing
+                feedback_dict = json.loads(cleaned_content)
+            
+            # Create Pydantic model
             feedback = JokeFeedback(**feedback_dict)
+            
         except Exception as e:
-            # Fallback if parsing fails
-            print(f"Warning: Failed to parse feedback: {e}")
+            # Fallback if parsing fails - log the actual response for debugging
+            print(f"❌ Failed to parse feedback: {e}")
+            print(f"📝 Raw response: {response.content[:500]}...")  # First 500 chars
+            
             feedback = JokeFeedback(
                 laughability_score=50,
                 age_appropriateness="Teen",
                 strengths=["Joke was generated"],
-                weaknesses=["Could not properly evaluate"],
-                suggestions=["Try again with clearer joke structure"],
-                overall_verdict="Evaluation incomplete due to parsing error"
+                weaknesses=["Could not properly evaluate due to format error"],
+                suggestions=["Try using a different LLM provider or model"],
+                overall_verdict="Evaluation incomplete - please try re-evaluation or switch models"
             )
         
         return feedback
@@ -138,20 +186,33 @@ You MUST respond with valid JSON matching this exact structure:
         
         response = self.llm.invoke(messages)
         
-        # Parse JSON response
+        # Parse JSON response with robust error handling
         try:
-            feedback_dict = self.parser.parse(response.content)
+            # Extract and clean JSON from response
+            cleaned_content = self._extract_json_from_response(response.content)
+            
+            # Try LangChain parser first
+            try:
+                feedback_dict = self.parser.parse(cleaned_content)
+            except:
+                # Fallback to standard JSON parsing
+                feedback_dict = json.loads(cleaned_content)
+            
+            # Create Pydantic model
             feedback = JokeFeedback(**feedback_dict)
+            
         except Exception as e:
-            # Fallback if parsing fails
-            print(f"Warning: Failed to parse feedback: {e}")
+            # Fallback if parsing fails - log the actual response for debugging
+            print(f"❌ Failed to parse re-evaluation feedback: {e}")
+            print(f"📝 Raw response: {response.content[:500]}...")  # First 500 chars
+            
             feedback = JokeFeedback(
                 laughability_score=50,
                 age_appropriateness="Teen",
                 strengths=["Joke was generated"],
-                weaknesses=["Could not properly evaluate"],
-                suggestions=["Try again with clearer joke structure"],
-                overall_verdict="Re-evaluation incomplete due to parsing error"
+                weaknesses=["Could not properly evaluate due to format error"],
+                suggestions=["Try using a different LLM provider or model"],
+                overall_verdict="Re-evaluation incomplete - please try re-evaluation or switch models"
             )
         
         return feedback
